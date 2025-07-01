@@ -14,7 +14,38 @@ let chessBoard: ChessBoard;
 let moveResult: MoveResult | null = null;
 let gameOverResult: { isOver: boolean; winner?: "red" | "black" } | null = null;
 
-// 移除重複的 step definitions，使用更通用的版本
+// Background 步驟
+Given(
+  "a standard Chinese chess board with {int}×{int} grid",
+  function (rows: number, cols: number) {
+    // 這是描述性步驟，不需要實際操作
+  }
+);
+
+Given("positions are indicated as \\(row, col\\)", function () {
+  // 這是描述性步驟，不需要實際操作
+});
+
+Given(
+  "Row {int} is Red's bottom row, Row {int} is Black's top row",
+  function (redRow: number, blackRow: number) {
+    // 這是描述性步驟，不需要實際操作
+  }
+);
+
+Given(
+  "Column {int} is the leftmost column from Red's perspective",
+  function (leftCol: number) {
+    // 這是描述性步驟，不需要實際操作
+  }
+);
+
+Given(
+  "the river is between Row {int} and Row {int}",
+  function (row1: number, row2: number) {
+    // 這是描述性步驟，不需要實際操作
+  }
+);
 
 Then("the move is legal", function () {
   if (!moveResult) {
