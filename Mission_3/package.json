@@ -1,0 +1,26 @@
+{
+  "name": "chinese-chess-bdd",
+  "version": "1.0.0",
+  "description": "Chinese Chess game developed with BDD approach",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "cucumber-js",
+    "test:watch": "cucumber-js --watch",
+    "build": "tsc"
+  },
+  "keywords": [
+    "chinese-chess",
+    "bdd",
+    "cucumber",
+    "typescript"
+  ],
+  "author": "@CabLate",
+  "license": "MIT",
+  "devDependencies": {
+    "@cucumber/cucumber": "^10.0.1",
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {}
+}

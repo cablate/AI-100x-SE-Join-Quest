@@ -8,7 +8,6 @@ pnpm-debug.log*
 # Testing
 coverage/
 *.report.html
-cucumber-report.html
 test-results/
 
 # Production
@@ -49,3 +48,5 @@ pnpm-lock.yaml
 
 prompt.md
 promptfromGPT.md
+
+#cucumber-report.html
