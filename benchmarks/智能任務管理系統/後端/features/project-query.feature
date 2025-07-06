@@ -23,17 +23,3 @@ Feature: 專案查詢功能
     When 用戶查詢擁有者為 "admin" 的專案
     Then 應該返回 2 個專案
     And 專案列表應該包含 "專案A", "專案C"
-
-  @ignore
-  Scenario: 按狀態篩選專案
-    Given 用戶 "admin" 已登入
-    When 用戶查詢狀態為 "active" 的專案
-    Then 應該返回 2 個專案
-    And 專案列表應該包含 "專案A", "專案B"
-
-  @ignore
-  Scenario: 空查詢結果
-    Given 用戶 "admin" 已登入
-    When 用戶查詢擁有者為 "nonexistent" 的專案
-    Then 應該返回 0 個專案
-    And 專案列表應該是空的 
