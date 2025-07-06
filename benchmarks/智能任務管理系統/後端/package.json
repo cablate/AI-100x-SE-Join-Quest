@@ -1,7 +1,7 @@
 {
   "name": "smart-task-management-system",
   "version": "1.0.0",
-  "description": "智能任務管理系統 - BDD 後端實作",
+  "description": "任務管理系統 - BDD 後端實作",
   "main": "index.js",
   "scripts": {
     "test": "cucumber-js",

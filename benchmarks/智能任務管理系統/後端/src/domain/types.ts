@@ -20,6 +20,7 @@ export interface TaskData {
   creatorId: string;
   assigneeId: string;
   status: string;
+  priority: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +35,22 @@ export interface UserData {
 export interface ProjectData {
   id: string;
   name: string;
+  description: string;
   ownerId: string;
+  status: string;
   createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateProjectRequest {
+  name: string;
+  description: string;
+  ownerId: string;
+}
+
+export interface UpdateProjectRequest {
+  name?: string;
+  description?: string;
+  status?: string;
+  updatedBy: string;
 }

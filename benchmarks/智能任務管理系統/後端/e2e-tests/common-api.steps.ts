@@ -72,8 +72,12 @@ When("我發送 DELETE 請求到 {string} 包含：", async function (endpoint: 
   }
 
   try {
-    response = await request(app).delete(endpoint).send(data);
-    console.log(`DELETE ${endpoint} - Status: ${response.status}`);
+    // 將查詢參數添加到 URL 中
+    const queryParams = new URLSearchParams(data).toString();
+    const finalEndpoint = `${endpoint}?${queryParams}`;
+    
+    response = await request(app).delete(finalEndpoint);
+    console.log(`DELETE ${finalEndpoint} - Status: ${response.status}`);
   } catch (error) {
     console.error(`DELETE 請求失敗: ${error}`);
     throw error;
@@ -127,4 +131,17 @@ Then("回應應該包含任務列表", function () {
   expect(response.body.data).to.have.property("tasks");
   expect(response.body.data.tasks).to.be.an("array");
   expect(response.body.data.tasks.length).to.be.greaterThan(0);
+});
+
+// POST 請求步驟 - 支持複雜的JSON請求體
+When("我發送 POST 請求到 {string} 包含：", async function (endpoint: string, dataTable: DataTable) {
+  const data = dataTable.hashes()[0];
+  
+  try {
+    response = await request(app).post(endpoint).send(data);
+    console.log(`POST ${endpoint} - Status: ${response.status}`);
+  } catch (error) {
+    console.error(`POST 請求失敗: ${error}`);
+    throw error;
+  }
 });

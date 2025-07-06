@@ -2,200 +2,154 @@
 
 ## 系統概覽
 
-**智能任務管理系統 (Smart Task Management System)** 是一個針對 BDD 開發實戰設計的 Benchmark 系統。系統通過智能分配算法、優先級管理和進度追蹤，幫助團隊高效完成專案目標。
+**智能任務管理系統 (Smart Task Management System)** 是一個針對 BDD 開發實戰設計的 Benchmark 系統。目前實作了基本的任務管理功能，包含完整的 CRUD 操作和權限控制。
 
-## 系統特點
+## 已實作功能
 
-### 🎯 業務邏輯複雜度
+### 📊 API 端點
 
-- **智能分配算法**：考慮技能匹配、工作負荷、時區、歷史表現、專案權限等多個因素
-- **Cyclomatic Complexity ≥ 8**：智能分配算法達到高複雜度要求
-- **狀態流轉管理**：完整的任務狀態機制和權限控制
+目前實作了 **5 個 API 端點**：
 
-### 📊 API 設計
+#### 任務管理 APIs
 
-符合 Benchmark 要求的 8+ API 端點：
+- `GET /api/tasks` - 查詢任務列表
+- `POST /api/tasks` - 創建新任務
+- `PUT /api/tasks/{taskId}` - 更新任務
+- `DELETE /api/tasks/{taskId}` - 刪除任務
 
-#### 修改狀態 APIs (6 道)
+#### 系統 APIs
 
-- `POST /tasks` - 創建任務
-- `PUT /tasks/{id}/assign` - 智能分配任務
-- `PUT /tasks/{id}/status` - 更新任務狀態
-- `PUT /tasks/{id}/priority` - 調整任務優先級
-- `POST /projects` - 創建專案
-- `PUT /projects/{id}/members` - 管理專案成員
+- `GET /health` - 健康檢查
 
-#### 查詢 APIs (2 道)
+### 🧪 BDD 測試
 
-- `GET /tasks` - 查詢任務列表（支持多種篩選）
-- `GET /projects/{id}/dashboard` - 查詢專案儀表板
+已實作完整的 BDD 測試覆蓋，包含 **5 個 Feature Files**：
 
-### 🧪 BDD 測試設計
+- **`task-creation.feature`** - 任務創建功能測試
+- **`task-validation.feature`** - 任務驗證測試
+- **`task-update.feature`** - 任務更新功能測試
+- **`task-delete.feature`** - 任務刪除功能測試
+- **`task-query.feature`** - 任務查詢功能測試
 
-每個 Feature file 都遵循 AI-BDD v3.1 規範：
+### 🏗️ 技術架構
 
-- **單一業務規則**：每個 Scenario 只測試一個業務規則
-- **數據驅動**：正確使用 Scenario Outline 和 Examples
-- **錯誤處理**：完整的異常場景和錯誤訊息驗證
-- **權限控制**：多角色權限驗證
-- **清理機制**：完整的測試資源清理
+#### 後端技術棧
 
-## 目錄結構
+- **框架**：Node.js + TypeScript + Express
+- **測試**：Cucumber + Chai
+- **架構模式**：MVC (Model-View-Controller)
+
+#### 目錄結構
 
 ```
-智能任務管理系統/
-├── requirement.md           # 需求規格書
-├── README.md               # 系統介紹
-├── AUTHOR                  # 作者署名
-├── 功能擴展建議.md          # 進階功能擴展指南
-├── api/                    # API 規格文件
-├── 後端/
-│   ├── features/           # BDD Feature files
-│   │   ├── task-creation-basic.feature      # 基本任務創建
-│   │   ├── task-assignment-basic.feature    # 智能分配（核心）
-│   │   ├── task-creation.feature           # 完整任務創建（進階）
-│   │   ├── task-assignment.feature         # 完整智能分配（進階）
-│   │   ├── task-status-transition.feature  # 狀態流轉（進階）
-│   │   ├── task-query.feature             # 查詢功能（進階）
-│   │   ├── project-management.feature     # 專案管理（進階）
-│   │   └── task-priority.feature          # 優先級調整（進階）
-│   └── app/               # 應用程式實作（待開發）
-└── 前端/                  # 前端相關（未實作）
+後端/
+├── src/
+│   ├── app.ts              # Express 應用程式設定
+│   ├── index.ts            # 服務器啟動點
+│   ├── controllers/        # 控制器層
+│   │   └── TaskController.ts
+│   ├── services/           # 業務邏輯層
+│   │   └── TaskService.ts
+│   ├── domain/             # 領域模型
+│   │   ├── Task.ts
+│   │   ├── User.ts
+│   │   ├── Project.ts
+│   │   └── types.ts
+│   └── routes/             # 路由設定
+│       └── taskRoutes.ts
+├── features/               # BDD Feature files
+├── steps/                  # BDD Step definitions
+├── e2e-tests/             # E2E 測試
+├── package.json
+└── tsconfig.json
 ```
 
-## Feature Files 概覽
+### 📝 資料模型
 
-### 🎯 基本功能（MVP 版本）
+#### Task (任務)
 
-#### 1. 任務創建功能 (`task-creation-basic.feature`)
-- **業務規則**：任務驗證、權限控制、基本 CRUD
-- **測試場景**：成功創建、必填欄位驗證（Scenario Outline）、權限驗證
-- **複雜度**：基礎，適合入門學習 BDD
+```typescript
+interface TaskData {
+  id: string;
+  title: string;
+  description: string;
+  projectId: string;
+  creatorId: string;
+  assigneeId: string;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
 
-#### 2. 智能任務分配功能 (`task-assignment-basic.feature`) ⭐
-- **業務規則**：多因素分配算法，高複雜度邏輯
-- **測試場景**：技能匹配、工作負荷、管理員優先
-- **複雜度**：高，**Cyclomatic Complexity ≥ 8**
+#### API 請求格式
 
-### 📚 進階功能（完整版本）
+```typescript
+// 創建任務
+interface CreateTaskRequest {
+  title: string;
+  description: string;
+  projectId: string;
+  creatorId: string;
+}
 
-完整的進階功能設計已整理在 **`功能擴展建議.md`** 中，包含：
+// 更新任務
+interface UpdateTaskRequest {
+  title?: string;
+  description?: string;
+  updatedBy: string;
+}
+```
 
-#### 第一階段擴展
-- **任務狀態流轉功能** - 完整的狀態機邏輯
-- **任務查詢功能** - 多條件篩選和分頁
-- **專案管理基本功能** - 成員和權限管理
+### ✅ 功能特點
 
-#### 第二階段擴展
-- **優先級調整系統** - 動態調整和緊急通知
-- **智能分配算法擴展** - 時區、歷史表現等因素
-- **高級查詢功能** - 複合查詢和效能優化
+- **權限控制**：只有任務創建者可以修改或刪除任務
+- **資料驗證**：完整的輸入驗證和錯誤處理
+- **RESTful API**：遵循 REST 原則的 API 設計
+- **錯誤處理**：統一的錯誤回應格式
+- **測試覆蓋**：完整的 BDD 測試和 E2E 測試
 
-#### 第三階段擴展
-- **工作流程自動化** - 任務依賴和自動化
-- **報告和分析** - 數據分析和儀表板
-- **通知和整合** - 外部系統整合
+### 🚀 使用方式
+
+#### 啟動服務
+
+```bash
+cd 後端
+npm install
+npm run dev
+```
+
+#### 執行測試
+
+```bash
+# BDD 測試
+npm run test
+
+# E2E 測試
+npm run test:e2e
+```
+
+#### API 測試
+
+服務啟動後可通過以下方式測試：
+
+- **基礎 URL**: `http://localhost:3000`
+- **健康檢查**: `GET /health`
+- **API 文檔**: 參考 `/api/openapi.yaml`
+
+### 📊 測試結果
+
+- **BDD 測試**: 8 scenarios (8 passed), 58 steps (58 passed)
+- **E2E 測試**: 12 scenarios (12 passed), 45 steps (45 passed)
+- **測試覆蓋率**: 100% 功能覆蓋
 
 ### 💡 設計理念
 
-**基本版 vs 完整版的差異：**
-- **基本版**：專注核心功能，適合快速實作和學習
-- **完整版**：包含所有進階場景，適合深度研究和產品開發
-
-**Scenario vs Scenario Outline 使用指南：**
-- 詳細說明請參考 `功能擴展建議.md` 中的使用指南
-
-## 技術架構
-
-### 後端技術棧
-
-- **框架**：Node.js + TypeScript + Express
-- **資料庫**：PostgreSQL + Redis (快取)
-- **認證**：JWT + bcrypt
-- **測試**：Cucumber + Jest + Supertest
-
-### 資料模型
-
-- **Task**：任務實體，包含狀態、優先級、分配資訊
-- **Project**：專案實體，包含成員和權限管理
-- **User**：用戶實體，包含技能和工作負荷資訊
-
-### 核心演算法
-
-- **智能分配算法**：多因素評分系統
-- **優先級調整**：基於時間和業務規則的自動調整
-- **權限控制**：基於角色的存取控制 (RBAC)
-
-## 使用方式
-
-### 1. 研究用途
-
-- **BDD 實踐**：學習如何撰寫高品質的 Feature files
-- **複雜度分析**：研究高複雜度業務邏輯的測試策略
-- **AI 開發**：使用 AI 工具進行 BDD 驅動開發
-
-### 2. 教學用途
-
-- **軟體測試**：教學 BDD 測試方法論
-- **系統設計**：展示複雜系統的架構設計
-- **專案管理**：了解任務管理系統的業務邏輯
-
-### 3. 開發用途
-
-- **參考實作**：作為類似系統的參考範例
-- **擴展開發**：基於此 Benchmark 進行功能擴展
-- **性能測試**：使用作為性能測試的基準系統
-
-## 開發指南
-
-### 實作順序建議
-
-1. **基礎模型**：先實作 User, Project, Task 等基礎模型
-2. **權限系統**：實作 RBAC 權限控制
-3. **CRUD 操作**：實作基本的增刪改查功能
-4. **狀態機**：實作任務狀態流轉邏輯
-5. **智能分配**：實作複雜的分配算法
-6. **查詢優化**：實作高效的查詢和篩選
-
-### BDD 開發流程
-
-1. **紅燈階段**：先跑測試，確保失敗
-2. **綠燈階段**：實作最小程式碼讓測試通過
-3. **重構階段**：改善程式碼品質
-4. **清理機制**：確保測試環境清潔
-
-## 貢獻指南
-
-### 擴展方向
-
-- **新功能**：添加新的 Feature files 和對應實作
-- **效能優化**：改善查詢效能和分配演算法
-- **UI/UX**：添加前端使用者介面
-- **整合**：與外部系統整合（如 Slack, Jira）
-
-### 程式碼品質
-
-- **測試覆蓋率**：目標 ≥ 90%
-- **程式碼規範**：遵循 TypeScript 最佳實踐
-- **文件更新**：保持文件與程式碼同步
-- **性能標準**：API 響應時間 < 500ms
-
-## 研究價值
-
-### 對 AI x BDD 研究的貢獻
-
-1. **複雜度基準**：提供高複雜度業務邏輯的測試基準
-2. **實際場景**：基於真實任務管理需求設計
-3. **可擴展性**：支援多種研究方向的擴展
-4. **教學價值**：適合用於 BDD 教學和實踐
-
-### 未來研究方向
-
-- **AI 自動化測試**：研究 AI 如何自動生成測試案例
-- **智能重構**：研究 AI 如何協助程式碼重構
-- **需求分析**：研究 AI 如何從需求生成 Feature files
-- **效能優化**：研究 AI 如何協助系統效能優化
+- **BDD 驅動開發**：先寫測試，後實作功能
+- **權限優先**：每個操作都有權限檢查
+- **錯誤處理**：完整的錯誤情況處理
+- **代碼品質**：遵循 TypeScript 最佳實踐
 
 ---
 
-**此 Benchmark 專為 AI x BDD 研究設計，歡迎研究者使用並貢獻改進。**
+**此 Benchmark 展示了完整的 BDD 開發流程，從需求分析到實作完成。**

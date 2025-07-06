@@ -2,10 +2,7 @@ import { DataTable, Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "chai";
 import { Task } from "../src/domain/Task";
 import { TaskService } from "../src/services/TaskService";
-import { taskService } from "./common.steps";
-
-// 任務查詢相關的狀態
-let queryResults: Task[] = [];
+import { queryResults, taskService } from "./common.steps";
 
 Given("系統中存在以下任務：", function (dataTable: DataTable) {
   const taskData = dataTable.hashes();
@@ -21,10 +18,15 @@ Given("系統中存在以下任務：", function (dataTable: DataTable) {
 
 When("用戶 {string} 查詢任務列表", function (userId: string) {
   try {
-    queryResults = taskService.getTasks(userId);
+    const results = taskService.getTasks(userId);
+
+    // 清空並重新填充 queryResults
+    queryResults.length = 0;
+    queryResults.push(...results);
+
     console.log(`用戶 ${userId} 查詢到 ${queryResults.length} 個任務`);
   } catch (error) {
-    queryResults = [];
+    queryResults.length = 0;
     console.log(`查詢失敗: ${error instanceof Error ? error.message : "未知錯誤"}`);
   }
 });

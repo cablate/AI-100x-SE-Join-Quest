@@ -8,10 +8,11 @@ export class Task {
   public readonly creatorId: string;
   public readonly assigneeId: string;
   public readonly status: string;
+  public readonly priority: string;
   public readonly createdAt: Date;
   public readonly updatedAt: Date;
 
-  constructor(id: string, title: string, description: string, projectId: string, creatorId: string, assigneeId?: string, status?: string) {
+  constructor(id: string, title: string, description: string, projectId: string, creatorId: string, assigneeId?: string, status?: string, priority?: string) {
     this.id = id;
     this.title = title;
     this.description = description;
@@ -19,13 +20,14 @@ export class Task {
     this.creatorId = creatorId;
     this.assigneeId = assigneeId || creatorId; // 創建者自動成為負責人
     this.status = status || "TODO"; // 預設狀態
+    this.priority = priority || "medium"; // 預設優先級
     this.createdAt = new Date();
     this.updatedAt = new Date();
   }
 
   // 更新任務方法
-  update(updates: { title?: string; description?: string }): Task {
-    return new Task(this.id, updates.title || this.title, updates.description || this.description, this.projectId, this.creatorId, this.assigneeId, this.status);
+  update(updates: { title?: string; description?: string; status?: string; priority?: string; assigneeId?: string }): Task {
+    return new Task(this.id, updates.title || this.title, updates.description || this.description, this.projectId, this.creatorId, updates.assigneeId || this.assigneeId, updates.status || this.status, updates.priority || this.priority);
   }
 
   toData(): TaskData {
@@ -37,6 +39,7 @@ export class Task {
       creatorId: this.creatorId,
       assigneeId: this.assigneeId,
       status: this.status,
+      priority: this.priority,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };
