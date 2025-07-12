@@ -4,8 +4,10 @@ info:
   description: |
     任務管理系統 (Task Management System) 的 RESTful API 規格。
 
-    此 API 提供完整的任務管理功能，包括：
+    此 API 提供完整的任務和專案管理功能，包括：
     - 任務的增刪改查操作
+    - 專案的增刪改查操作  
+    - 高級查詢和批量操作
     - 權限控制和資料驗證
     - 完整的錯誤處理
 
@@ -209,6 +211,344 @@ paths:
         "500":
           $ref: "#/components/responses/InternalServerError"
 
+  /api/projects:
+    get:
+      summary: 查詢專案列表
+      description: 查詢專案列表，支援按擁有者和狀態過濾
+      tags:
+        - 專案管理
+      parameters:
+        - name: ownerId
+          in: query
+          required: false
+          description: 專案擁有者 ID
+          schema:
+            type: string
+            example: "user123"
+        - name: status
+          in: query
+          required: false
+          description: 專案狀態
+          schema:
+            type: string
+            enum: [active, completed, cancelled]
+            example: "active"
+      responses:
+        "200":
+          description: 成功獲取專案列表
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Projects retrieved successfully"
+                  data:
+                    type: object
+                    properties:
+                      projects:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Project"
+                      count:
+                        type: integer
+                        example: 3
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    post:
+      summary: 創建新專案
+      description: 創建一個新的專案
+      tags:
+        - 專案管理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProjectRequest"
+      responses:
+        "201":
+          description: 專案創建成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Project created successfully"
+                  data:
+                    $ref: "#/components/schemas/Project"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/projects/{projectId}:
+    get:
+      summary: 取得特定專案
+      description: 根據專案 ID 取得專案詳細資訊
+      tags:
+        - 專案管理
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: 專案 ID
+          schema:
+            type: string
+            example: "project123"
+      responses:
+        "200":
+          description: 成功獲取專案資訊
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Project retrieved successfully"
+                  data:
+                    $ref: "#/components/schemas/Project"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    put:
+      summary: 更新專案
+      description: 更新指定的專案資訊
+      tags:
+        - 專案管理
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: 專案 ID
+          schema:
+            type: string
+            example: "project123"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProjectRequest"
+      responses:
+        "200":
+          description: 專案更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Project updated successfully"
+                  data:
+                    $ref: "#/components/schemas/Project"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+    delete:
+      summary: 刪除專案
+      description: 刪除指定的專案
+      tags:
+        - 專案管理
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          description: 專案 ID
+          schema:
+            type: string
+            example: "project123"
+        - name: deletedBy
+          in: query
+          required: true
+          description: 執行刪除操作的用戶 ID
+          schema:
+            type: string
+            example: "user123"
+      responses:
+        "200":
+          description: 專案刪除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Project deleted successfully"
+                  data:
+                    type: object
+                    properties:
+                      projectId:
+                        type: string
+                        example: "project123"
+                      deleted:
+                        type: boolean
+                        example: true
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/tasks/query:
+    get:
+      summary: 高級任務查詢
+      description: 支援多條件查詢和統計的高級查詢功能
+      tags:
+        - 任務管理
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          description: 用戶 ID
+          schema:
+            type: string
+            example: "user123"
+        - name: status
+          in: query
+          required: false
+          description: 任務狀態
+          schema:
+            type: string
+            example: "pending"
+        - name: priority
+          in: query
+          required: false
+          description: 任務優先級
+          schema:
+            type: string
+            example: "high"
+        - name: projectId
+          in: query
+          required: false
+          description: 專案 ID
+          schema:
+            type: string
+            example: "project123"
+      responses:
+        "200":
+          description: 查詢成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      tasks:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Task"
+                      statistics:
+                        type: object
+                        properties:
+                          totalCount:
+                            type: integer
+                            example: 10
+                          pendingCount:
+                            type: integer
+                            example: 3
+        "400":
+          $ref: "#/components/responses/BadRequest"
+
+  /api/tasks/batch:
+    post:
+      summary: 批量操作任務
+      description: 對多個任務執行批量操作（更新狀態、分配等）
+      tags:
+        - 任務管理
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                operation:
+                  type: string
+                  enum: [update_status, delete, assign]
+                  example: "update_status"
+                taskIds:
+                  type: array
+                  items:
+                    type: string
+                  example: ["task1", "task2"]
+                data:
+                  type: object
+                  properties:
+                    status:
+                      type: string
+                      example: "completed"
+                    assigneeId:
+                      type: string
+                      example: "user456"
+                userId:
+                  type: string
+                  example: "user123"
+              required:
+                - operation
+                - taskIds
+                - userId
+      responses:
+        "200":
+          description: 批量操作成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  updatedCount:
+                    type: integer
+                    example: 2
+                  results:
+                    type: array
+                    items:
+                      type: object
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
 components:
   schemas:
     Task:
@@ -315,6 +655,100 @@ components:
       required:
         - updatedBy
 
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+          description: 專案唯一識別碼
+          example: "project123"
+        name:
+          type: string
+          description: 專案名稱
+          example: "任務管理系統開發"
+        description:
+          type: string
+          description: 專案描述
+          example: "開發一個完整的任務管理系統"
+        ownerId:
+          type: string
+          description: 專案擁有者 ID
+          example: "user123"
+        status:
+          type: string
+          description: 專案狀態
+          enum: [active, completed, cancelled]
+          example: "active"
+        createdAt:
+          type: string
+          format: date-time
+          description: 創建時間
+          example: "2024-01-01T12:00:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: 更新時間
+          example: "2024-01-01T12:00:00.000Z"
+      required:
+        - id
+        - name
+        - description
+        - ownerId
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateProjectRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 專案名稱
+          example: "任務管理系統開發"
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          description: 專案描述
+          example: "開發一個完整的任務管理系統"
+          minLength: 1
+          maxLength: 500
+        ownerId:
+          type: string
+          description: 專案擁有者 ID
+          example: "user123"
+      required:
+        - name
+        - description
+        - ownerId
+
+    UpdateProjectRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 專案名稱
+          example: "任務管理系統開發（已更新）"
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          description: 專案描述
+          example: "開發一個完整的任務管理系統，增加更多功能"
+          minLength: 1
+          maxLength: 500
+        status:
+          type: string
+          description: 專案狀態
+          enum: [active, completed, cancelled]
+          example: "completed"
+        updatedBy:
+          type: string
+          description: 執行更新操作的用戶 ID
+          example: "user123"
+      required:
+        - updatedBy
+
     ErrorResponse:
       type: object
       properties:
@@ -375,4 +809,6 @@ tags:
   - name: 系統
     description: 系統狀態和健康檢查相關 API
   - name: 任務管理
-    description: 任務的增刪改查操作相關 API
+    description: 任務的增刪改查操作、高級查詢和批量操作相關 API
+  - name: 專案管理
+    description: 專案的增刪改查操作相關 API

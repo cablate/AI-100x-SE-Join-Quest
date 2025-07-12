@@ -7,6 +7,24 @@ import app from "../src/app";
 export let response: request.Response;
 export let createdTaskId: string;
 
+// 新增清理專案數據的功能
+Given('清理測試數據', function () {
+  // 清理任務數據
+  const TaskService = require('../src/services/TaskService').TaskService;
+  TaskService.clearAll();
+  
+  // 清理專案數據
+  const ProjectService = require('../src/services/ProjectService').ProjectService;
+  ProjectService.clearAll();
+  
+  console.log('🧹 API測試數據已清理');
+});
+
+Given('API 伺服器正在運行', function () {
+  // 這個步驟只是標記，實際上 supertest 不需要伺服器運行
+  console.log('📡 API 伺服器準備就緒');
+});
+
 // 建立測試前需要的任務
 export const setupTask = async (title: string = "測試任務", description: string = "測試描述") => {
   const createResponse = await request(app).post("/api/tasks").send({
@@ -35,6 +53,7 @@ Given("我已經建立了測試任務", async function () {
 When("我發送 GET 請求到 {string}", async function (endpoint: string) {
   try {
     response = await request(app).get(endpoint);
+    this.response = response; // 同時設置到 World context
     console.log(`GET ${endpoint} - Status: ${response.status}`);
   } catch (error) {
     console.error(`GET 請求失敗: ${error}`);
@@ -86,43 +105,47 @@ When("我發送 DELETE 請求到 {string} 包含：", async function (endpoint: 
 
 // 共享的 Then 步驟 - 狀態碼檢查
 Then("回應狀態碼應該是 {int}", function (expectedStatus: number) {
-  expect(response.status).to.equal(expectedStatus);
+  const currentResponse = this.response || response;
+  expect(currentResponse.status).to.equal(expectedStatus);
 });
 
 // 共享的 Then 步驟 - 回應內容檢查
 Then("回應應該包含 {string}: {string}", function (key: string, value: string) {
+  const currentResponse = this.response || response;
   // 處理嵌套路徑，如 data.title
   if (key.includes(".")) {
     const keys = key.split(".");
-    let current = response.body;
+    let current = currentResponse.body;
     for (const k of keys) {
       current = current[k];
     }
     expect(current).to.equal(value);
   } else {
-    expect(response.body).to.have.property(key);
-    expect(response.body[key].toString()).to.equal(value);
+    expect(currentResponse.body).to.have.property(key);
+    expect(currentResponse.body[key].toString()).to.equal(value);
   }
 });
 
 Then("回應應該包含 {string}: {int}", function (key: string, value: number) {
+  const currentResponse = this.response || response;
   // 處理嵌套路徑，如 data.count
   if (key.includes(".")) {
     const keys = key.split(".");
-    let current = response.body;
+    let current = currentResponse.body;
     for (const k of keys) {
       current = current[k];
     }
     expect(current).to.equal(value);
   } else {
-    expect(response.body).to.have.property(key);
-    expect(response.body[key]).to.equal(value);
+    expect(currentResponse.body).to.have.property(key);
+    expect(currentResponse.body[key]).to.equal(value);
   }
 });
 
 Then("回應應該包含 {string}: true", function (key: string) {
-  expect(response.body).to.have.property(key);
-  expect(response.body[key]).to.be.true;
+  const currentResponse = this.response || response;
+  expect(currentResponse.body).to.have.property(key);
+  expect(currentResponse.body[key]).to.be.true;
 });
 
 // 新增的查詢專用 Then 步驟
