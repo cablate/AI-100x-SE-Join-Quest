@@ -14,9 +14,4 @@ Feature: 任務查詢功能
       | task1 | 任務1 | user1 | proj1 |
       | task2 | 任務2 | user1 | proj1 |
 
-  @ignore
-  Scenario: 成功查詢任務列表
-    Given 用戶 "user1" 已登入系統
-    When 用戶 "user1" 查詢任務列表
-    Then 應該返回 2 個任務
-    And 所有任務的負責人都應該是 "user1" 
+ 

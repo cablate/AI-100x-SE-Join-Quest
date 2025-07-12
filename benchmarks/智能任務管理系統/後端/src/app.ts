@@ -1,5 +1,6 @@
 import express from "express";
 import taskRoutes from "./routes/taskRoutes";
+import projectRoutes from "./routes/projectRoutes";
 
 const app = express();
 
@@ -9,6 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // 路由
 app.use("/api/tasks", taskRoutes);
+app.use("/api/projects", projectRoutes);
 
 // 健康檢查
 app.get("/health", (req, res) => {
