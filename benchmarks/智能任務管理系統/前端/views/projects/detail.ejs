@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <%- include('../shared/navbar') %>
+    
+    <main class="container-fluid py-4">
+        <%- include('../shared/alerts') %>
+        
+        <!-- 頁面標題和操作按鈕 -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1>
+                    <i class="fas fa-folder-open me-2"></i><%= project.name %>
+                    <span class="badge bg-<%= project.status === 'active' ? 'success' : project.status === 'completed' ? 'primary' : 'secondary' %> ms-2">
+                        <%= project.status === 'active' ? '進行中' : project.status === 'completed' ? '已完成' : '已取消' %>
+                    </span>
+                </h1>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="btn-group">
+                    <a href="/projects" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>返回列表
+                    </a>
+                    <a href="/projects/<%= project.id %>/edit" class="btn btn-outline-primary">
+                        <i class="fas fa-edit me-1"></i>編輯專案
+                    </a>
+                    <a href="/tasks/new?projectId=<%= project.id %>" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>新增任務
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 專案資訊 -->
+        <div class="row mb-4">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>專案資訊
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6>專案描述</h6>
+                                <p class="text-muted"><%= project.description %></p>
+                            </div>
+                            <div class="col-md-4">
+                                <h6>專案詳情</h6>
+                                <ul class="list-unstyled">
+                                    <li><strong>專案 ID:</strong> <code><%= project.id %></code></li>
+                                    <li><strong>擁有者:</strong> <%= project.ownerId %></li>
+                                    <li><strong>建立時間:</strong> <%= new Date(project.createdAt).toLocaleString('zh-TW') %></li>
+                                    <li><strong>最後更新:</strong> <%= new Date(project.updatedAt).toLocaleString('zh-TW') %></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-pie me-2"></i>任務統計
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <% 
+                        const totalTasks = tasks.length;
+                        const pendingTasks = tasks.filter(t => t.status === 'pending' || t.status === 'TODO').length;
+                        const inProgressTasks = tasks.filter(t => t.status === 'in_progress').length;
+                        const completedTasks = tasks.filter(t => t.status === 'completed').length;
+                        const cancelledTasks = tasks.filter(t => t.status === 'cancelled').length;
+                        %>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>總任務數</span>
+                                <strong><%= totalTasks %></strong>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-warning">待處理</span>
+                                <span><%= pendingTasks %></span>
+                            </div>
+                            <% if (totalTasks > 0) { %>
+                                <div class="progress mb-1" style="height: 4px;">
+                                    <div class="progress-bar bg-warning" style="width: <%= (pendingTasks/totalTasks*100).toFixed(1) %>%"></div>
+                                </div>
+                            <% } %>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-primary">進行中</span>
+                                <span><%= inProgressTasks %></span>
+                            </div>
+                            <% if (totalTasks > 0) { %>
+                                <div class="progress mb-1" style="height: 4px;">
+                                    <div class="progress-bar bg-primary" style="width: <%= (inProgressTasks/totalTasks*100).toFixed(1) %>%"></div>
+                                </div>
+                            <% } %>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-success">已完成</span>
+                                <span><%= completedTasks %></span>
+                            </div>
+                            <% if (totalTasks > 0) { %>
+                                <div class="progress mb-1" style="height: 4px;">
+                                    <div class="progress-bar bg-success" style="width: <%= (completedTasks/totalTasks*100).toFixed(1) %>%"></div>
+                                </div>
+                            <% } %>
+                        </div>
+                        
+                        <% if (cancelledTasks > 0) { %>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-secondary">已取消</span>
+                                <span><%= cancelledTasks %></span>
+                            </div>
+                            <div class="progress mb-1" style="height: 4px;">
+                                <div class="progress-bar bg-secondary" style="width: <%= (cancelledTasks/totalTasks*100).toFixed(1) %>%"></div>
+                            </div>
+                        </div>
+                        <% } %>
+                        
+                        <% if (totalTasks > 0) { %>
+                        <hr>
+                        <div class="text-center">
+                            <span class="text-muted">完成率</span>
+                            <h4 class="text-success"><%= (completedTasks/totalTasks*100).toFixed(1) %>%</h4>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 專案任務 -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-tasks me-2"></i>專案任務 (<%= tasks.length %> 項)
+                </h5>
+                <a href="/tasks/new?projectId=<%= project.id %>" class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus me-1"></i>新增任務
+                </a>
+            </div>
+            <div class="card-body">
+                <% if (tasks.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>標題</th>
+                                    <th>描述</th>
+                                    <th>狀態</th>
+                                    <th>優先級</th>
+                                    <th>負責人</th>
+                                    <th>建立時間</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% tasks.forEach(task => { %>
+                                    <tr>
+                                        <td>
+                                            <strong><%= task.title %></strong>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">
+                                                <%= task.description.length > 40 ? task.description.substring(0, 40) + '...' : task.description %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-<%= task.status === 'completed' ? 'success' : (task.status === 'pending' || task.status === 'TODO') ? 'warning' : task.status === 'in_progress' ? 'primary' : 'secondary' %>">
+                                                <%= task.status === 'completed' ? '已完成' : (task.status === 'pending' || task.status === 'TODO') ? '待處理' : task.status === 'in_progress' ? '進行中' : '已取消' %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-<%= task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'info' %>">
+                                                <%= task.priority === 'high' ? '高' : task.priority === 'medium' ? '中' : '低' %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted"><%= task.assigneeId %></small>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                <%= new Date(task.createdAt).toLocaleDateString('zh-TW') %>
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="/tasks/<%= task.id %>/edit" class="btn btn-outline-primary" title="編輯">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger" title="刪除" 
+                                                        onclick="confirmDeleteTask('<%= task.id %>', '<%= task.title %>')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-4">
+                        <i class="fas fa-tasks fa-2x text-muted mb-3"></i>
+                        <h6 class="text-muted">此專案目前沒有任務</h6>
+                        <p class="text-muted">點擊上方按鈕來為此專案建立第一個任務</p>
+                        <a href="/tasks/new?projectId=<%= project.id %>" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>新增任務
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+    
+    <%- include('../shared/footer') %>
+    
+    <!-- 刪除任務確認 Modal -->
+    <div class="modal fade" id="deleteTaskModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">確認刪除任務</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>您確定要刪除任務 "<span id="taskTitle"></span>" 嗎？</p>
+                    <p class="text-muted">此操作無法復原。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <form method="POST" id="deleteTaskForm" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>確認刪除
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        function confirmDeleteTask(taskId, taskTitle) {
+            document.getElementById('taskTitle').textContent = taskTitle;
+            document.getElementById('deleteTaskForm').action = `/tasks/${taskId}/delete`;
+            new bootstrap.Modal(document.getElementById('deleteTaskModal')).show();
+        }
+    </script>
+</body>
+</html>

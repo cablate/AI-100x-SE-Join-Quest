@@ -1,0 +1,29 @@
+<% if (typeof success !== 'undefined' || typeof error !== 'undefined') { %>
+    <div class="row">
+        <div class="col-12">
+            <% if (typeof success !== 'undefined' && success) { %>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <% if (success === 'created') { %>
+                        成功建立！
+                    <% } else if (success === 'updated') { %>
+                        成功更新！
+                    <% } else if (success === 'deleted') { %>
+                        成功刪除！
+                    <% } else { %>
+                        操作成功！
+                    <% } %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>
+            
+            <% if (typeof error !== 'undefined' && error) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <%= error %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <% } %>
+        </div>
+    </div>
+<% } %>

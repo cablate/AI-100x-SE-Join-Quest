@@ -11,7 +11,7 @@ export class TaskController {
 
   createTask = async (req: Request, res: Response) => {
     try {
-      const { title, description, projectId, creatorId } = req.body;
+      const { title, description, projectId, creatorId, status, priority } = req.body;
 
       // 基本驗證
       if (!title || !description || !projectId || !creatorId) {
@@ -26,6 +26,8 @@ export class TaskController {
         description,
         projectId,
         creatorId,
+        status,
+        priority,
       };
 
       const task = this.taskService.createTask(request);
@@ -108,7 +110,7 @@ export class TaskController {
       res.status(200).json({
         success: true,
         message: "Task deleted successfully",
-        data: { taskId, deleted: isDeleted },
+        data: { deleted: isDeleted },
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -166,7 +168,9 @@ export class TaskController {
   // 高級查詢任務
   queryTasks = async (req: Request, res: Response) => {
     try {
+      console.log("queryTasks 被調用，查詢參數:", req.query);
       const {
+        userId,
         status,
         projectId,
         assigneeId,
@@ -177,15 +181,43 @@ export class TaskController {
         sortDirection,
         page,
         pageSize,
+        priority,
       } = req.query;
 
-      // 構建查詢選項
-      const queryOptions: any = {};
+      // 基本驗證 - userId 是必需的
+      if (!userId || typeof userId !== "string") {
+        return res.status(400).json({
+          error: "Missing required query parameter",
+          message: "使用者ID為必填參數",
+        });
+      }
 
-      if (status) queryOptions.status = status;
+      // 構建查詢選項
+      const queryOptions: any = { userId };
+
+      // 狀態映射 - 將中文狀態轉換為英文
+      if (status) {
+        const statusMap: { [key: string]: string } = {
+          "待處理": "TODO",
+          "進行中": "in_progress", 
+          "已完成": "completed",
+          "已取消": "cancelled"
+        };
+        queryOptions.status = statusMap[status as string] || status;
+      }
       if (projectId) queryOptions.projectId = projectId;
       if (assigneeId) queryOptions.assigneeId = assigneeId;
       if (search) queryOptions.search = search;
+      
+      // 優先級映射
+      if (priority) {
+        const priorityMap: { [key: string]: string } = {
+          "高": "high",
+          "中": "medium", 
+          "低": "low"
+        };
+        queryOptions.priority = priorityMap[priority as string] || priority;
+      }
       if (startDate) queryOptions.startDate = new Date(startDate as string);
       if (endDate) queryOptions.endDate = new Date(endDate as string);
       if (sortBy) queryOptions.sortBy = sortBy;
@@ -198,7 +230,13 @@ export class TaskController {
       res.status(200).json({
         success: true,
         message: "Tasks queried successfully",
-        data: result,
+        tasks: result.tasks,
+        totalCount: result.totalCount,
+        statistics: {
+          total: result.totalCount,
+          currentPage: result.currentPage || 1,
+          totalPages: result.totalPages || 1,
+        },
       });
     } catch (error) {
       res.status(500).json({
@@ -211,9 +249,16 @@ export class TaskController {
   // 批量更新任務
   batchUpdateTasks = async (req: Request, res: Response) => {
     try {
-      const { taskIds, updates, operatorId, transactionMode } = req.body;
+      const { operation, taskIds, data, userId } = req.body;
 
       // 基本驗證
+      if (!operation) {
+        return res.status(400).json({
+          error: "Missing required fields",
+          message: "operation is required",
+        });
+      }
+
       if (!taskIds || !Array.isArray(taskIds) || taskIds.length === 0) {
         return res.status(400).json({
           error: "Missing required fields",
@@ -221,34 +266,81 @@ export class TaskController {
         });
       }
 
-      if (!updates || typeof updates !== "object") {
+      if (!userId) {
         return res.status(400).json({
           error: "Missing required fields",
-          message: "updates must be an object",
+          message: "userId is required",
         });
       }
 
-      if (!operatorId) {
+      // 驗證操作類型
+      if (!["update_status", "delete", "update_assignee", "update_priority"].includes(operation)) {
         return res.status(400).json({
-          error: "Missing required fields",
-          message: "operatorId is required",
+          error: "Invalid operation type",
+          message: "不支援的操作類型",
         });
       }
 
-      const batchRequest = {
-        taskIds,
-        updates,
-        operatorId,
-        transactionMode: transactionMode || "partial",
+      let results: any[] = [];
+      let successCount = 0;
+      let failedCount = 0;
+
+      for (const taskId of taskIds) {
+        try {
+          const task = this.taskService.getTaskById(taskId);
+          if (!task) {
+            failedCount++;
+            results.push({ taskId, error: "任務不存在" });
+            continue;
+          }
+
+          // 權限檢查
+          if (task.creatorId !== userId && task.assigneeId !== userId) {
+            throw new Error("無權限操作他人任務");
+          }
+
+          if (operation === "delete") {
+            this.taskService.deleteTask(taskId, userId);
+            successCount++;
+            results.push({ taskId, status: "deleted" });
+          } else if (operation === "update_status" && data?.status) {
+            this.taskService.updateTask(taskId, { 
+              status: data.status, 
+              updatedBy: userId 
+            });
+            successCount++;
+            results.push({ taskId, status: "updated", newStatus: data.status });
+          } else {
+            failedCount++;
+            results.push({ taskId, error: "無效的操作或數據" });
+          }
+        } catch (error) {
+          if (error instanceof Error && error.message === "無權限操作他人任務") {
+            return res.status(403).json({
+              error: "Permission denied",
+              message: "無權限操作他人任務",
+            });
+          }
+          failedCount++;
+          results.push({ taskId, error: error instanceof Error ? error.message : "未知錯誤" });
+        }
+      }
+
+      const responseData: any = {
+        success: true,
+        results,
       };
 
-      const result = this.taskService.batchUpdateTasks(batchRequest);
+      if (operation === "delete") {
+        responseData.deletedCount = successCount;
+      } else {
+        responseData.updatedCount = successCount;
+      }
 
-      res.status(200).json({
-        success: true,
-        message: "Batch update completed",
-        data: result,
-      });
+      console.log("批量操作回應:", JSON.stringify(responseData, null, 2));
+      console.log("回應中的 results:", responseData.results);
+      console.log("results.length:", responseData.results ? responseData.results.length : "undefined");
+      res.status(200).json(responseData);
     } catch (error) {
       res.status(500).json({
         error: "Internal server error",

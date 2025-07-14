@@ -154,8 +154,7 @@ export class ProjectController {
         success: true,
         message: "Project deleted successfully",
         data: {
-          projectId,
-          deleted,
+          deleted: deleted,
         },
       });
     } catch (error: any) {

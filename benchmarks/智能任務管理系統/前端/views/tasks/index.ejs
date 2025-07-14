@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <%- include('../shared/navbar') %>
+    
+    <main class="container-fluid py-4">
+        <%- include('../shared/alerts') %>
+        
+        <!-- 頁面標題和操作按鈕 -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h1>
+                    <i class="fas fa-tasks me-2"></i><%= title %>
+                </h1>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="/tasks/new" class="btn btn-primary">
+                    <i class="fas fa-plus me-1"></i>新增任務
+                </a>
+            </div>
+        </div>
+        
+        <!-- 統計資訊 -->
+        <% if (statistics && Object.keys(statistics).length > 0) { %>
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center">
+                        <h5>總計</h5>
+                        <h3><%= statistics.totalCount || 0 %></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center">
+                        <h5>待處理</h5>
+                        <h3><%= statistics.pendingCount || 0 %></h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+        
+        <!-- 篩選器 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter me-2"></i>篩選條件
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" action="/tasks" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">狀態</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">所有狀態</option>
+                            <option value="TODO" <%= filters.status === 'TODO' ? 'selected' : '' %>>待處理 (TODO)</option>
+                            <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>待處理</option>
+                            <option value="in_progress" <%= filters.status === 'in_progress' ? 'selected' : '' %>>進行中</option>
+                            <option value="completed" <%= filters.status === 'completed' ? 'selected' : '' %>>已完成</option>
+                            <option value="cancelled" <%= filters.status === 'cancelled' ? 'selected' : '' %>>已取消</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label for="priority" class="form-label">優先級</label>
+                        <select name="priority" id="priority" class="form-select">
+                            <option value="">所有優先級</option>
+                            <option value="high" <%= filters.priority === 'high' ? 'selected' : '' %>>高</option>
+                            <option value="medium" <%= filters.priority === 'medium' ? 'selected' : '' %>>中</option>
+                            <option value="low" <%= filters.priority === 'low' ? 'selected' : '' %>>低</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <label for="projectId" class="form-label">專案</label>
+                        <select name="projectId" id="projectId" class="form-select">
+                            <option value="">所有專案</option>
+                            <% projects.forEach(project => { %>
+                                <option value="<%= project.id %>" <%= filters.projectId === project.id ? 'selected' : '' %>>
+                                    <%= project.name %>
+                                </option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-outline-primary me-2">
+                            <i class="fas fa-search me-1"></i>篩選
+                        </button>
+                        <a href="/tasks" class="btn btn-outline-secondary">
+                            <i class="fas fa-redo me-1"></i>重置
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 任務列表 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>任務列表 (<%= tasks.length %> 項)
+                </h5>
+            </div>
+            <div class="card-body">
+                <% if (tasks.length > 0) { %>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>標題</th>
+                                    <th>描述</th>
+                                    <th>專案</th>
+                                    <th>狀態</th>
+                                    <th>優先級</th>
+                                    <th>負責人</th>
+                                    <th>建立時間</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% tasks.forEach(task => { %>
+                                    <tr>
+                                        <td>
+                                            <strong><%= task.title %></strong>
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">
+                                                <%= task.description.length > 50 ? task.description.substring(0, 50) + '...' : task.description %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <% const project = projects.find(p => p.id === task.projectId); %>
+                                            <% if (project) { %>
+                                                <a href="/projects/<%= project.id %>" class="text-decoration-none">
+                                                    <%= project.name %>
+                                                </a>
+                                            <% } else { %>
+                                                <span class="text-muted">未指定</span>
+                                            <% } %>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-<%= task.status === 'completed' ? 'success' : (task.status === 'pending' || task.status === 'TODO') ? 'warning' : task.status === 'in_progress' ? 'primary' : 'secondary' %>">
+                                                <%= task.status === 'completed' ? '已完成' : (task.status === 'pending' || task.status === 'TODO') ? '待處理' : task.status === 'in_progress' ? '進行中' : '已取消' %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-<%= task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'info' %>">
+                                                <%= task.priority === 'high' ? '高' : task.priority === 'medium' ? '中' : '低' %>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted"><%= task.assigneeId %></small>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                <%= new Date(task.createdAt).toLocaleDateString('zh-TW') %>
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="/tasks/<%= task.id %>/edit" class="btn btn-outline-primary" title="編輯">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger" title="刪除" 
+                                                        onclick="confirmDelete('<%= task.id %>', '<%= task.title %>')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } else { %>
+                    <div class="text-center py-5">
+                        <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">目前沒有任務</h5>
+                        <p class="text-muted">點擊上方按鈕來建立您的第一個任務</p>
+                        <a href="/tasks/new" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>新增任務
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </main>
+    
+    <%- include('../shared/footer') %>
+    
+    <!-- 刪除確認 Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">確認刪除</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>您確定要刪除任務 "<span id="taskTitle"></span>" 嗎？</p>
+                    <p class="text-muted">此操作無法復原。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <form method="POST" id="deleteForm" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>確認刪除
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        function confirmDelete(taskId, taskTitle) {
+            document.getElementById('taskTitle').textContent = taskTitle;
+            document.getElementById('deleteForm').action = `/tasks/${taskId}/delete`;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+</body>
+</html>

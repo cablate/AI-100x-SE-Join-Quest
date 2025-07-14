@@ -2,6 +2,7 @@ import { Task } from "../domain/Task";
 import { CreateTaskRequest, UpdateTaskRequest } from "../domain/types";
 
 export interface QueryOptions {
+  userId?: string;
   status?: string;
   projectId?: string;
   assigneeId?: string;
@@ -12,6 +13,7 @@ export interface QueryOptions {
   pageSize?: number;
   startDate?: Date;
   endDate?: Date;
+  priority?: string;
 }
 
 export interface QueryResult {
@@ -122,8 +124,17 @@ export class TaskService {
     // 生成唯一ID
     const taskId = `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // 創建任務
-    const task = new Task(taskId, request.title, request.description, request.projectId, request.creatorId);
+    // 創建任務，包含 status 和 priority
+    const task = new Task(
+      taskId, 
+      request.title, 
+      request.description, 
+      request.projectId, 
+      request.creatorId,
+      request.creatorId, // 預設 assigneeId 為 creatorId
+      request.status || "TODO", // 預設狀態為 TODO
+      request.priority || "medium" // 預設優先級為 medium
+    );
 
     // 儲存任務
     TaskService.tasks.set(taskId, task);
@@ -147,6 +158,7 @@ export class TaskService {
     const updatedTask = task.update({
       title: request.title,
       description: request.description,
+      status: request.status,
     });
 
     // 更新存儲
@@ -187,9 +199,20 @@ export class TaskService {
     return userTasks;
   }
 
+  getTaskById(taskId: string): Task | null {
+    return TaskService.tasks.get(taskId) || null;
+  }
+
   // 高級查詢功能
   queryTasks(options: QueryOptions): QueryResult {
     let allTasks = Array.from(TaskService.tasks.values());
+
+    // 用戶過濾 - 只返回用戶創建或負責的任務
+    if (options.userId) {
+      allTasks = allTasks.filter((task) => 
+        task.creatorId === options.userId || task.assigneeId === options.userId
+      );
+    }
 
     // 狀態過濾
     if (options.status) {
@@ -199,6 +222,11 @@ export class TaskService {
     // 專案過濾
     if (options.projectId) {
       allTasks = allTasks.filter((task) => task.projectId === options.projectId);
+    }
+
+    // 優先級過濾
+    if (options.priority) {
+      allTasks = allTasks.filter((task) => task.priority === options.priority);
     }
 
     // 負責人過濾

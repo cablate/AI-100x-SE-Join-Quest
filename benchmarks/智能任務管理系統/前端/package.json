@@ -1,0 +1,24 @@
+{
+  "name": "task-management-frontend",
+  "version": "1.0.0",
+  "description": "任務管理系統前端 - EJS 模組化實作",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon app.js",
+    "start": "node app.js"
+  },
+  "keywords": [
+    "EJS",
+    "Task Management",
+    "Frontend",
+    "Express"
+  ],
+  "dependencies": {
+    "express": "^4.18.0",
+    "ejs": "^3.1.0",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}

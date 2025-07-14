@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <%- include('../shared/navbar') %>
+    
+    <main class="container py-4">
+        <!-- 錯誤/成功訊息 -->
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <%= error %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+        
+        <!-- 頁面標題 -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h1>
+                    <i class="fas fa-edit me-2"></i><%= title %>
+                </h1>
+            </div>
+            <div class="col-md-6 text-end">
+                <div class="btn-group">
+                    <a href="/projects" class="btn btn-outline-secondary">
+                        <i class="fas fa-list me-1"></i>專案列表
+                    </a>
+                    <a href="/projects/<%= project.id %>" class="btn btn-outline-primary">
+                        <i class="fas fa-eye me-1"></i>查看詳情
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 編輯專案表單 -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-edit me-2"></i>編輯專案資訊
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="/projects/<%= project.id %>">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">專案名稱 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       value="<%= project.name %>" required maxlength="100">
+                                <div class="form-text">請輸入簡潔明確的專案名稱</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">專案描述 <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="description" name="description" rows="4" 
+                                          required maxlength="500"><%= project.description %></textarea>
+                                <div class="form-text">詳細描述專案目標、範圍和要求</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="status" class="form-label">專案狀態</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="active" <%= project.status === 'active' ? 'selected' : '' %>>進行中</option>
+                                    <option value="completed" <%= project.status === 'completed' ? 'selected' : '' %>>已完成</option>
+                                    <option value="cancelled" <%= project.status === 'cancelled' ? 'selected' : '' %>>已取消</option>
+                                </select>
+                                <div class="form-text">
+                                    <% if (project.status === 'completed') { %>
+                                        <i class="fas fa-info-circle text-info me-1"></i>將專案標記為已完成將影響相關任務的顯示
+                                    <% } else if (project.status === 'cancelled') { %>
+                                        <i class="fas fa-exclamation-triangle text-warning me-1"></i>取消的專案通常不會再有新任務
+                                    <% } %>
+                                </div>
+                            </div>
+                            
+                            <!-- 專案資訊 -->
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">專案資訊</h6>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <small class="text-muted">
+                                                <strong>專案 ID:</strong> <%= project.id %><br>
+                                                <strong>擁有者:</strong> <%= project.ownerId %><br>
+                                                <strong>建立時間:</strong> <%= new Date(project.createdAt).toLocaleString('zh-TW') %>
+                                            </small>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted">
+                                                <strong>最後更新:</strong> <%= new Date(project.updatedAt).toLocaleString('zh-TW') %>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="d-flex justify-content-between">
+                                <a href="/projects/<%= project.id %>" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-1"></i>取消
+                                </a>
+                                <div>
+                                    <button type="button" class="btn btn-outline-danger me-2" 
+                                            onclick="confirmDelete('<%= project.id %>', '<%= project.name %>')">
+                                        <i class="fas fa-trash me-1"></i>刪除專案
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>儲存變更
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <%- include('../shared/footer') %>
+    
+    <!-- 刪除確認 Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">確認刪除</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>您確定要刪除專案 "<span id="projectName"></span>" 嗎？</p>
+                    <p class="text-warning">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        警告：刪除專案可能會影響相關的任務。
+                    </p>
+                    <p class="text-muted">此操作無法復原。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <form method="POST" id="deleteForm" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>確認刪除
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        function confirmDelete(projectId, projectName) {
+            document.getElementById('projectName').textContent = projectName;
+            document.getElementById('deleteForm').action = `/projects/${projectId}/delete`;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+    </script>
+</body>
+</html>

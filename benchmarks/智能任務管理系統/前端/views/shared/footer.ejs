@@ -1,0 +1,17 @@
+<footer class="bg-light text-center text-muted py-3 mt-5">
+    <div class="container">
+        <p>&copy; 2025 任務管理系統. 由 BDD 方法開發. By CabLate</p>
+        <p class="small">
+            系統狀態: 
+            <% if (typeof systemStatus !== 'undefined') { %>
+                <% if (systemStatus === 'ok') { %>
+                    <span class="text-success"><i class="fas fa-circle"></i> 正常運行</span>
+                <% } else { %>
+                    <span class="text-danger"><i class="fas fa-circle"></i> 服務異常</span>
+                <% } %>
+            <% } else { %>
+                <span class="text-warning"><i class="fas fa-circle"></i> 狀態未知</span>
+            <% } %>
+        </p>
+    </div>
+</footer>

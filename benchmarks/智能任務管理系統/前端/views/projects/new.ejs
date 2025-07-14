@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <%- include('../shared/navbar') %>
+    
+    <main class="container py-4">
+        <!-- 錯誤/成功訊息 -->
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <%= error %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <% } %>
+        
+        <!-- 頁面標題 -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h1>
+                    <i class="fas fa-folder-plus me-2"></i><%= title %>
+                </h1>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="/projects" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>返回專案列表
+                </a>
+            </div>
+        </div>
+        
+        <!-- 新增專案表單 -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-edit me-2"></i>專案詳細資訊
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST" action="/projects">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">專案名稱 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       value="<%= typeof formData !== 'undefined' && formData.name ? formData.name : '' %>" 
+                                       required maxlength="100">
+                                <div class="form-text">請輸入簡潔明確的專案名稱</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">專案描述 <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="description" name="description" rows="4" 
+                                          required maxlength="500"><%= typeof formData !== 'undefined' && formData.description ? formData.description : '' %></textarea>
+                                <div class="form-text">詳細描述專案目標、範圍和要求</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="status" class="form-label">初始狀態</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="active" <%= typeof formData !== 'undefined' && formData.status === 'active' ? 'selected' : 'selected' %>>進行中</option>
+                                    <option value="completed" <%= typeof formData !== 'undefined' && formData.status === 'completed' ? 'selected' : '' %>>已完成</option>
+                                    <option value="cancelled" <%= typeof formData !== 'undefined' && formData.status === 'cancelled' ? 'selected' : '' %>>已取消</option>
+                                </select>
+                                <div class="form-text">通常新專案會設為「進行中」狀態</div>
+                            </div>
+                            
+                            <!-- 專案建立提示 -->
+                            <div class="card bg-light mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title">
+                                        <i class="fas fa-lightbulb me-1"></i>專案建立小提示
+                                    </h6>
+                                    <ul class="mb-0 small text-muted">
+                                        <li>專案名稱應該簡潔且具有描述性</li>
+                                        <li>詳細的描述有助於團隊成員理解專案目標</li>
+                                        <li>建立專案後，您可以在其中創建相關任務</li>
+                                        <li>您將成為此專案的擁有者，擁有完整的管理權限</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="d-flex justify-content-between">
+                                <a href="/projects" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-1"></i>取消
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>建立專案
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <%- include('../shared/footer') %>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>

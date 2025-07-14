@@ -4,11 +4,14 @@ export interface CreateTaskRequest {
   description: string;
   projectId: string;
   creatorId: string;
+  status?: string;
+  priority?: string;
 }
 
 export interface UpdateTaskRequest {
   title?: string;
   description?: string;
+  status?: string;
   updatedBy: string;
 }
 
