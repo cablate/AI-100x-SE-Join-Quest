@@ -5,7 +5,8 @@ Feature: 專案創建功能
 
   Background:
     Given 系統已初始化
-    And 存在用戶 "admin" 和 "user1"
+    And 系統中存在用戶 "admin"
+    And 系統中存在用戶 "user1"
 
   Scenario: 成功創建專案
     Given 用戶 "admin" 已登入

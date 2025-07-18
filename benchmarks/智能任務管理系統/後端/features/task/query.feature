@@ -7,7 +7,8 @@ Feature: 任務查詢功能
   """
 
   Background:
-    Given 系統中存在用戶 "user1" 和 "user2"
+    Given 系統中存在用戶 "user1"
+    And 系統中存在用戶 "user2"
     And 系統中存在專案 "proj1" 由用戶 "user1" 管理
     And 系統中存在以下任務：
       | taskId | title | assigneeId | projectId |

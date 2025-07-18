@@ -5,7 +5,9 @@ Feature: 批量任務操作功能
 
   Background:
     Given 系統已初始化
-    And 存在用戶 "admin", "user1", "user2"
+    And 系統中存在用戶 "admin"
+    And 系統中存在用戶 "user1"
+    And 系統中存在用戶 "user2"
     And 存在專案 "proj1"，擁有者為 "admin"
     And 存在以下任務：
       | ID     | title    | description | project | creator | assignee | status |

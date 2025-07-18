@@ -35,11 +35,7 @@ Before(function () {
 });
 
 // Shared Given steps
-Given("系統中存在用戶 {string} 和 {string}", function (user1: string, user2: string) {
-  users.set(user1, new User(user1, `${user1}@example.com`));
-  users.set(user2, new User(user2, `${user2}@example.com`));
-  console.log(`Created users: ${user1}, ${user2}`);
-});
+// 已移除 - 使用原子化的 "系統中存在用戶 {string}" 步驟替代
 
 Given("系統中存在用戶 {string}", function (userId: string) {
   users.set(userId, new User(userId, `${userId}@example.com`));
@@ -51,24 +47,25 @@ Given("系統已初始化", function () {
   console.log("System initialized");
 });
 
-Given("存在用戶 {string} 和 {string}", function (user1: string, user2: string) {
-  users.set(user1, new User(user1, `${user1}@example.com`));
-  users.set(user2, new User(user2, `${user2}@example.com`));
-  console.log(`Created users: ${user1}, ${user2}`);
-});
+// 已移除 - 使用原子化的 "系統中存在用戶 {string}" 步驟替代
 
-Given("存在用戶 {string}, {string}, {string}", function (user1: string, user2: string, user3: string) {
-  users.set(user1, new User(user1, `${user1}@example.com`));
-  users.set(user2, new User(user2, `${user2}@example.com`));
-  users.set(user3, new User(user3, `${user3}@example.com`));
-  console.log(`Created users: ${user1}, ${user2}, ${user3}`);
-});
+// 已移除 - 使用原子化的 "系統中存在用戶 {string}" 步驟替代
 
+// 統一的登入步驟 - 根據 BDD v6.0 原子性原則
 Given("用戶 {string} 已登入", function (userId: string) {
   currentUser = users.get(userId) || null;
   if (!currentUser) {
     throw new Error(`User ${userId} does not exist`);
   }
+  
+  // 初始化 taskService（之前在「已登入系統」中的邏輯）
+  taskService = TaskService.getInstance();
+  
+  // 同步既有任務到 TaskService
+  tasks.forEach((task, taskId) => {
+    (TaskService as any).tasks.set(taskId, task);
+  });
+  
   console.log(`User ${userId} logged in`);
 });
 
@@ -95,21 +92,7 @@ Given("當前日期是 {int}-{int}-{int}", function (year: number, month: number
   console.log(`Set date to: ${currentDate.toISOString().split("T")[0]}`);
 });
 
-Given("用戶 {string} 已登入系統", function (userId: string) {
-  currentUser = users.get(userId) || null;
-  if (!currentUser) {
-    throw new Error(`User ${userId} does not exist`);
-  }
-
-  taskService = TaskService.getInstance();
-
-  // Sync existing tasks to TaskService
-  tasks.forEach((task, taskId) => {
-    (TaskService as any).tasks.set(taskId, task);
-  });
-
-  console.log(`User ${userId} logged in`);
-});
+// 已移除 - 統一使用 "用戶 {string} 已登入" 步驟
 
 Given("系統中存在任務 {string} 負責人為 {string}", function (taskId: string, assigneeId: string) {
   const assignee = users.get(assigneeId);

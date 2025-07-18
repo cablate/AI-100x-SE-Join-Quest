@@ -5,7 +5,9 @@ Feature: 高級任務查詢功能
 
   Background:
     Given 系統已初始化
-    And 存在用戶 "admin", "user1", "user2"
+    And 系統中存在用戶 "admin"
+    And 系統中存在用戶 "user1"
+    And 系統中存在用戶 "user2"
     And 存在以下專案：
       | name      | description | owner  | status |
       | 前端專案 | 前端開發   | admin  | active |

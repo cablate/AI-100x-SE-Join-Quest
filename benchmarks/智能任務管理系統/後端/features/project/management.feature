@@ -5,7 +5,8 @@ Feature: 專案管理功能
 
   Background:
     Given 系統已初始化
-    And 存在用戶 "admin" 和 "user1"
+    And 系統中存在用戶 "admin"
+    And 系統中存在用戶 "user1"
     And 存在專案 "proj1"，擁有者為 "admin"
 
   Scenario: 成功更新專案資訊

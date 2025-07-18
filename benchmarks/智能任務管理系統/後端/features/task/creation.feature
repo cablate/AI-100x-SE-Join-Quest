@@ -7,13 +7,14 @@ Feature: 任務創建功能
   """
 
   Background:
-    Given 系統中存在用戶 "user1" 和 "user2"
+    Given 系統中存在用戶 "user1"
+    And 系統中存在用戶 "user2"
     And 系統中存在專案 "proj1" 由用戶 "user1" 管理
     And 用戶 "user1" 有權限存取專案 "proj1"
     And 當前日期是 2024-01-15
 
   Scenario: 成功創建任務
-    Given 用戶 "user1" 已登入系統
+    Given 用戶 "user1" 已登入
     When 用戶 "user1" 創建任務：
       | title | description | projectId |
       | 實作登入功能 | 開發用戶登入API | proj1 |

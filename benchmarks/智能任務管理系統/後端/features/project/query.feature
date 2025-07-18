@@ -5,7 +5,8 @@ Feature: 專案查詢功能
 
   Background:
     Given 系統已初始化
-    And 存在用戶 "admin" 和 "user1"
+    And 系統中存在用戶 "admin"
+    And 系統中存在用戶 "user1"
     And 存在以下專案：
       | name      | description     | owner  | status    |
       | 專案A    | 第一個專案     | admin  | active    |
