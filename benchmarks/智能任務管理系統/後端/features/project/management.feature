@@ -11,9 +11,9 @@ Feature: 專案管理功能
   Scenario: 成功更新專案資訊
     Given 用戶 "admin" 已登入
     When 用戶更新專案 "proj1"：
-      | 名稱   | 更新後的專案名稱     |
-      | 描述   | 更新後的專案描述     |
-      | 狀態   | completed            |
+      | name   | 更新後的專案名稱     |
+      | description | 更新後的專案描述   |
+      | status | completed            |
     Then 專案應該被成功更新
     And 專案名稱應該是 "更新後的專案名稱"
     And 專案狀態應該是 "completed"

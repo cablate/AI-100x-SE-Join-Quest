@@ -9,9 +9,9 @@ When("用戶創建專案：", function (dataTable: DataTable) {
 
   try {
     const project = ProjectService.getInstance().createProject({
-      name: data["名稱"] || "",
-      description: data["描述"] || "",
-      ownerId: data["擁有者"] || "",
+      name: data["name"] || "",
+      description: data["description"] || "",
+      ownerId: data["owner"] || "",
     });
 
     // 將創建的專案保存到測試上下文和共享Map
@@ -19,7 +19,7 @@ When("用戶創建專案：", function (dataTable: DataTable) {
     projects.set(project.id, project);
     setLastError(null);
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "未知錯誤";
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     setLastError(errorMessage);
   }
 });
@@ -45,7 +45,7 @@ Given("已存在名稱為 {string} 的專案", function (projectName: string) {
   // 創建一個已存在的專案
   ProjectService.getInstance().createProject({
     name: projectName,
-    description: "已存在的專案",
+    description: "Existing project",
     ownerId: "admin",
   });
 });

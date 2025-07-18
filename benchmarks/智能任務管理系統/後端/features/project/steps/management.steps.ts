@@ -19,7 +19,7 @@ let currentProjectId: string;
 When("用戶更新專案 {string}：", function (projectId: string, dataTable: any) {
   currentProjectId = projectId;
   if (!currentUser) {
-    throw new Error("沒有用戶登入");
+    throw new Error("No user logged in");
   }
 
   projectService = ProjectService.getInstance();
@@ -31,13 +31,13 @@ When("用戶更新專案 {string}：", function (projectId: string, dataTable: a
   for (let i = 0; i < rows.length; i++) {
     const [key, value] = rows[i];
     switch (key) {
-      case "名稱":
+      case "name":
         updateData.name = value;
         break;
-      case "描述":
+      case "description":
         updateData.description = value;
         break;
-      case "狀態":
+      case "status":
         updateData.status = value;
         break;
     }
@@ -50,17 +50,17 @@ When("用戶更新專案 {string}：", function (projectId: string, dataTable: a
     // 找到真實的專案 ID
     const existingProject = projects.get(projectId);
     if (!existingProject) {
-      throw new Error(`專案 ${projectId} 不存在`);
+      throw new Error(`Project ${projectId} does not exist`);
     }
 
     const project = projectService.updateProject(existingProject.id, updateData);
     // 更新本地 projects Map
     projects.set(projectId, project);
     projects.set(project.id, project);
-    console.log(`專案 ${projectId} 更新成功`);
+    console.log(`Project ${projectId} updated successfully`);
   } catch (error) {
-    setLastError(error instanceof Error ? error.message : "未知錯誤");
-    console.log(`專案 ${projectId} 更新失敗: ${error}`);
+    setLastError(error instanceof Error ? error.message : "Unknown error");
+    console.log(`Project ${projectId} update failed: ${error}`);
   }
 });
 
@@ -73,7 +73,7 @@ Then("專案名稱應該是 {string}", function (expectedName: string) {
   // 使用 currentProjectId 獲取正確的專案
   const project = projects.get(currentProjectId);
   if (!project) {
-    throw new Error(`專案 ${currentProjectId} 不存在`);
+    throw new Error(`Project ${currentProjectId} does not exist`);
   }
   expect(project.name).to.equal(expectedName);
 });

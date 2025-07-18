@@ -13,7 +13,7 @@ Feature: 任務更新功能
   Scenario: 成功更新任務
     Given 用戶 "user1" 已登入系統
     When 用戶 "user1" 更新任務 "task1"：
-      | 標題 | 描述 |
+      | title | description |
       | 更新後的標題 | 更新後的描述 |
     Then 任務應該更新成功
     And 任務標題應該是 "更新後的標題"
@@ -21,7 +21,7 @@ Feature: 任務更新功能
   Scenario: 拒絕無權限用戶修改任務
     Given 用戶 "user2" 已登入系統
     When 用戶 "user2" 嘗試更新任務 "task1"：
-      | 標題 | 描述 |
+      | title | description |
       | 惡意修改 | 無權限修改 |
     Then 任務更新應該失敗
     And 錯誤訊息應該是 "您沒有權限修改此任務" 

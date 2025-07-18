@@ -15,7 +15,7 @@ Feature: 任務創建功能
   Scenario: 成功創建任務
     Given 用戶 "user1" 已登入系統
     When 用戶 "user1" 創建任務：
-      | 標題 | 描述 | 專案ID |
+      | title | description | projectId |
       | 實作登入功能 | 開發用戶登入API | proj1 |
     Then 任務應該創建成功
     And 任務狀態應該是 "TODO"

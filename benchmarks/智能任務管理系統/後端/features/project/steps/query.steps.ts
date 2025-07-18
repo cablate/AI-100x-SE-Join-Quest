@@ -23,75 +23,75 @@ Given("存在以下專案：", function (dataTable: any) {
   const rows = dataTable.hashes();
 
   for (const row of rows) {
-    const owner = users.get(row["擁有者"]);
+    const owner = users.get(row["owner"]);
     if (!owner) {
-      throw new Error(`用戶 ${row["擁有者"]} 不存在`);
+      throw new Error(`User ${row["owner"]} does not exist`);
     }
 
     const project = projectService.createProject({
-      name: row["名稱"],
-      description: row["描述"],
+      name: row["name"],
+      description: row["description"],
       ownerId: owner.id,
     });
 
     // 如果需要設置特定狀態
-    if (row["狀態"] && row["狀態"] !== "active") {
-      const updatedProject = project.update({ status: row["狀態"] });
+    if (row["status"] && row["status"] !== "active") {
+      const updatedProject = project.update({ status: row["status"] });
       // 更新 ProjectService 中的專案
       (projectService as any).projects.set(project.id, updatedProject);
-      projects.set(row["名稱"], updatedProject);
+      projects.set(row["name"], updatedProject);
     } else {
-      projects.set(row["名稱"], project);
+      projects.set(row["name"], project);
     }
 
-    console.log(`建立專案: ${row["名稱"]}，擁有者: ${row["擁有者"]}，狀態: ${row["狀態"] || "active"}`);
+    console.log(`Created project: ${row["name"]}, Owner: ${row["owner"]}, Status: ${row["status"] || "active"}`);
   }
 });
 
 When("用戶查詢所有專案", function () {
   if (!currentUser) {
-    throw new Error("沒有用戶登入");
+    throw new Error("No user logged in");
   }
   
   projectService = ProjectService.getInstance();
   
   try {
     queryResults = projectService.getProjects();
-    console.log(`查詢到 ${queryResults.length} 個專案`);
+    console.log(`Found ${queryResults.length} projects`);
   } catch (error) {
-    console.log(`查詢失敗: ${error}`);
+    console.log(`Query failed: ${error}`);
     queryResults = [];
   }
 });
 
 When("用戶查詢擁有者為 {string} 的專案", function (ownerId: string) {
   if (!currentUser) {
-    throw new Error("沒有用戶登入");
+    throw new Error("No user logged in");
   }
   
   projectService = ProjectService.getInstance();
   
   try {
     queryResults = projectService.getProjects({ ownerId });
-    console.log(`查詢到 ${queryResults.length} 個專案（擁有者: ${ownerId}）`);
+    console.log(`Found ${queryResults.length} projects (Owner: ${ownerId})`);
   } catch (error) {
-    console.log(`查詢失敗: ${error}`);
+    console.log(`Query failed: ${error}`);
     queryResults = [];
   }
 });
 
 When("用戶查詢狀態為 {string} 的專案", function (status: string) {
   if (!currentUser) {
-    throw new Error("沒有用戶登入");
+    throw new Error("No user logged in");
   }
   
   projectService = ProjectService.getInstance();
   
   try {
     queryResults = projectService.getProjects({ status });
-    console.log(`查詢到 ${queryResults.length} 個專案（狀態: ${status}）`);
+    console.log(`Found ${queryResults.length} projects (Status: ${status})`);
   } catch (error) {
-    console.log(`查詢失敗: ${error}`);
+    console.log(`Query failed: ${error}`);
     queryResults = [];
   }
 });

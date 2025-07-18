@@ -7,7 +7,7 @@ Feature: 專案查詢功能
     Given 系統已初始化
     And 存在用戶 "admin" 和 "user1"
     And 存在以下專案：
-      | 名稱     | 描述           | 擁有者 | 狀態      |
+      | name      | description     | owner  | status    |
       | 專案A    | 第一個專案     | admin  | active    |
       | 專案B    | 第二個專案     | user1  | active    |
       | 專案C    | 第三個專案     | admin  | completed |

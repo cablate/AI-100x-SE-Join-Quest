@@ -23,24 +23,24 @@ When("用戶查詢任務：", function (dataTable: DataTable) {
   // 構建查詢選項
   const queryOptions: any = {};
 
-  if (conditions["狀態"]) {
-    queryOptions.status = conditions["狀態"];
+  if (conditions["status"]) {
+    queryOptions.status = conditions["status"];
   }
 
-  if (conditions["專案"]) {
-    const projectName = conditions["專案"];
+  if (conditions["project"]) {
+    const projectName = conditions["project"];
     const project = projects.get(projectName);
     if (project) {
       queryOptions.projectId = project.id;
     }
   }
 
-  if (conditions["負責人"]) {
-    queryOptions.assigneeId = conditions["負責人"];
+  if (conditions["assignee"]) {
+    queryOptions.assigneeId = conditions["assignee"];
   }
 
-  if (conditions["關鍵字"]) {
-    queryOptions.search = conditions["關鍵字"];
+  if (conditions["keyword"]) {
+    queryOptions.search = conditions["keyword"];
   }
 
   // 調用真正的TaskService查詢方法
@@ -50,9 +50,9 @@ When("用戶查詢任務：", function (dataTable: DataTable) {
   queryResults.length = 0;
   queryResults.push(...result.tasks);
 
-  console.log(`調試: 使用TaskService查詢，結果數量 ${queryResults.length}`);
+  console.log(`Debug: Using TaskService query, result count ${queryResults.length}`);
   console.log(
-    `調試: 查詢結果任務:`,
+    `Debug: Query result tasks:`,
     queryResults.map((t) => (t as any).title)
   );
 
@@ -75,14 +75,14 @@ When("用戶查詢任務並排序：", function (dataTable: DataTable) {
 
   if (sortConfig.length > 0) {
     const config = sortConfig[0];
-    const field = config["排序欄位"];
-    const direction = config["排序方向"];
+    const field = config["sortField"];
+    const direction = config["sortDirection"];
 
-    if (field === "優先級") {
+    if (field === "priority") {
       queryOptions.sortBy = "priority";
-    } else if (field === "狀態") {
+    } else if (field === "status") {
       queryOptions.sortBy = "status";
-    } else if (field === "創建時間") {
+    } else if (field === "createdAt") {
       queryOptions.sortBy = "createdAt";
     }
 
@@ -150,8 +150,8 @@ When("用戶查詢任務並分頁：", function (dataTable: DataTable) {
     config[key] = value;
   }
 
-  const page = parseInt(config["頁碼"]);
-  const pageSize = parseInt(config["每頁數量"]);
+  const page = parseInt(config["page"]);
+  const pageSize = parseInt(config["pageSize"]);
 
   const taskService = TaskService.getInstance();
 
@@ -227,14 +227,14 @@ Then("查詢統計應該顯示：", function (dataTable: DataTable) {
 
   // 創建中文到英文的映射
   const keyMapping: Record<string, string> = {
-    總任務數: "totalTasks",
-    待處理任務: "pendingTasks",
-    進行中任務: "inProgressTasks",
-    已完成任務: "completedTasks",
+    totalTasks: "totalTasks",
+    pendingTasks: "pendingTasks",
+    inProgressTasks: "inProgressTasks",
+    completedTasks: "completedTasks",
   };
 
-  for (const [chineseKey, value] of Object.entries(expected)) {
-    const englishKey = keyMapping[chineseKey] || chineseKey;
+  for (const [key, value] of Object.entries(expected)) {
+    const englishKey = keyMapping[key] || key;
     expect(queryStats[englishKey]).to.equal(parseInt(value as string));
   }
 });
@@ -243,9 +243,9 @@ Then("任務應該按以下順序返回：", function (dataTable: DataTable) {
   const expected = dataTable.hashes();
   for (let i = 0; i < expected.length; i++) {
     const task = queryResults[i];
-    expect((task as any).title).to.equal(expected[i]["任務標題"]);
-    expect((task as any).priority).to.equal(expected[i]["優先級"]);
-    expect((task as any).status).to.equal(expected[i]["狀態"]);
+    expect((task as any).title).to.equal(expected[i]["taskTitle"]);
+    expect((task as any).priority).to.equal(expected[i]["priority"]);
+    expect((task as any).status).to.equal(expected[i]["status"]);
   }
 });
 
@@ -254,7 +254,7 @@ Then("搜索結果應該高亮顯示關鍵字", function () {
   expect(queryResults.length).to.be.greaterThan(0);
 });
 
-Then("分頁資訊應該顯示：", function (dataTable: DataTable) {
+Then("分頁資訊應訮顯示：", function (dataTable: DataTable) {
   const rows = dataTable.raw();
   const expected: Record<string, string> = {};
 
@@ -266,14 +266,14 @@ Then("分頁資訊應該顯示：", function (dataTable: DataTable) {
 
   // 創建中文到英文的映射
   const keyMapping: Record<string, string> = {
-    當前頁: "currentPage",
-    每頁數量: "pageSize",
-    總任務數: "totalCount",
-    總頁數: "totalPages",
+    currentPage: "currentPage",
+    pageSize: "pageSize",
+    totalCount: "totalCount",
+    totalPages: "totalPages",
   };
 
-  for (const [chineseKey, value] of Object.entries(expected)) {
-    const englishKey = keyMapping[chineseKey] || chineseKey;
+  for (const [key, value] of Object.entries(expected)) {
+    const englishKey = keyMapping[key] || key;
     expect(paginationInfo[englishKey]).to.equal(parseInt(value as string));
   }
 });

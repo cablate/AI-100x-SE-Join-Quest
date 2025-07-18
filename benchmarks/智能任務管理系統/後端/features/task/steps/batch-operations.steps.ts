@@ -21,7 +21,7 @@ When("用戶批量操作任務：", function (dataTable: DataTable) {
   const taskUpdates: string[] = [];
 
   for (const [key, value] of rawData) {
-    if (key === "任務更新") {
+    if (key === "taskUpdate") {
       taskUpdates.push(value);
     } else {
       config[key] = value;
@@ -31,27 +31,27 @@ When("用戶批量操作任務：", function (dataTable: DataTable) {
   // 如果有任務更新，將它們添加到配置中
   if (taskUpdates.length > 0) {
     taskUpdates.forEach((update, index) => {
-      config[`任務更新_${index}`] = update;
+      config[`taskUpdate_${index}`] = update;
     });
   }
 
-  const operationType = config["操作類型"];
-  const taskIds = config["任務ID"] ? config["任務ID"].split(",") : [];
+  const operationType = config["operation"];
+  const taskIds = config["taskIds"] ? config["taskIds"].split(",") : [];
 
-  console.log(`調試: 批量操作類型: ${operationType}`);
-  console.log(`調試: 任務ID列表: ${taskIds.join(", ")}`);
-  console.log(`調試: 當前任務存儲:`, Array.from(tasks.keys()));
-  console.log(`調試: 完整配置:`, config);
+  console.log(`Debug: Batch operation type: ${operationType}`);
+  console.log(`Debug: Task ID list: ${taskIds.join(", ")}`);
+  console.log(`Debug: Current task storage:`, Array.from(tasks.keys()));
+  console.log(`Debug: Complete config:`, config);
 
   const taskService = TaskService.getInstance();
 
   try {
-    if (operationType === "狀態更新") {
-      const newStatus = config["新狀態"];
-      const operator = config["操作者"];
-      const transactionMode = config["事務模式"] || "partial";
+    if (operationType === "status update") {
+      const newStatus = config["newStatus"];
+      const operator = config["operator"];
+      const transactionMode = config["transactionMode"] || "partial";
 
-      console.log(`調試: 操作者: ${operator}, 新狀態: ${newStatus}`);
+      console.log(`Debug: Operator: ${operator}, New status: ${newStatus}`);
 
       // 構建批量更新請求
       const batchRequest = {
@@ -86,16 +86,16 @@ When("用戶批量操作任務：", function (dataTable: DataTable) {
       // 如果是事務性失敗，設置錯誤訊息
       if (transactionMode === "strict" && result.failedCount > 0) {
         const { setLastError } = require("./common.steps");
-        setLastError(result.errors[0] || "批量操作失敗，所有變更已回滾");
+        setLastError(result.errors[0] || "Batch operation failed, all changes rolled back");
       }
 
-      console.log(`調試: 批量操作結果: 成功=${result.successCount}, 失敗=${result.failedCount}`);
-      console.log(`調試: 批量操作錯誤:`, result.errors);
-    } else if (operationType === "負責人分配") {
-      const newAssignee = config["新負責人"];
-      const operator = config["操作者"];
+      console.log(`Debug: Batch operation result: Success=${result.successCount}, Failed=${result.failedCount}`);
+      console.log(`Debug: Batch operation errors:`, result.errors);
+    } else if (operationType === "assigneeAssignment") {
+      const newAssignee = config["newAssignee"];
+      const operator = config["operator"];
 
-      console.log(`調試: 操作者: ${operator}, 新負責人: ${newAssignee}`);
+      console.log(`Debug: Operator: ${operator}, New assignee: ${newAssignee}`);
 
       // 構建批量更新請求
       const batchRequest = {
@@ -132,15 +132,15 @@ When("用戶批量操作任務：", function (dataTable: DataTable) {
         if (!notificationsSent[newAssignee]) {
           notificationsSent[newAssignee] = [];
         }
-        notificationsSent[newAssignee].push("任務分配通知");
+        notificationsSent[newAssignee].push("Task assignment notification");
       }
-    } else if (operationType === "混合更新") {
+    } else if (operationType === "mixedUpdate") {
       // 對於混合更新，需要特殊處理
-      const updates = Object.entries(config).filter(([key, value]) => key.startsWith("任務更新"));
+      const updates = Object.entries(config).filter(([key, value]) => key.startsWith("taskUpdate"));
 
-      console.log(`調試: 混合更新數量: ${updates.length}`);
-      console.log(`調試: 完整配置項目:`, Object.keys(config));
-      console.log(`調試: 任務更新列表:`, updates);
+      console.log(`Debug: Mixed update count: ${updates.length}`);
+      console.log(`Debug: Complete config items:`, Object.keys(config));
+      console.log(`Debug: Task update list:`, updates);
 
       let totalSuccess = 0;
       let totalFailed = 0;
@@ -150,16 +150,16 @@ When("用戶批量操作任務：", function (dataTable: DataTable) {
         const [taskId, changesStr] = updateStr.split(":");
         const changes = changesStr.split(",");
 
-        console.log(`調試: 混合更新任務 ${taskId}: ${changesStr}`);
+        console.log(`Debug: Mixed update task ${taskId}: ${changesStr}`);
 
         // 構建單個任務的更新請求
         const updates: any = {};
         for (const change of changes) {
           const [field, value] = change.split("=");
-          console.log(`調試: 更新字段 ${field} 為 ${value}`);
-          if (field === "狀態") {
+          console.log(`Debug: Update field ${field} to ${value}`);
+          if (field === "status") {
             updates.status = value;
-          } else if (field === "負責人") {
+          } else if (field === "assignee") {
             updates.assigneeId = value;
           }
         }
@@ -167,7 +167,7 @@ When("用戶批量操作任務：", function (dataTable: DataTable) {
         const batchRequest = {
           taskIds: [taskId.trim()],
           updates: updates,
-          operatorId: config["操作者"],
+          operatorId: config["operator"],
           transactionMode: "partial" as "strict" | "partial",
         };
 
@@ -187,9 +187,9 @@ When("用戶批量操作任務：", function (dataTable: DataTable) {
           totalFailed += result.failedCount;
           allErrors.push(...result.errors);
 
-          console.log(`調試: 任務 ${taskId} 混合更新成功`);
+          console.log(`Debug: Task ${taskId} mixed update successful`);
         } catch (error) {
-          console.log(`調試: 任務 ${taskId} 更新異常:`, error);
+          console.log(`Debug: Task ${taskId} update error:`, error);
           totalFailed++;
           allErrors.push(`${taskId}: ${error}`);
         }
@@ -203,7 +203,7 @@ When("用戶批量操作任務：", function (dataTable: DataTable) {
       batchErrors = allErrors;
     }
   } catch (error: any) {
-    console.log(`調試: 批量操作異常:`, error);
+    console.log(`Debug: Batch operation error:`, error);
     lastErrorMessage = error.message;
 
     // 同時設置到 common.steps.ts 的錯誤狀態
@@ -218,8 +218,8 @@ When("用戶批量操作任務：", function (dataTable: DataTable) {
     batchErrors = [error.message];
   }
 
-  console.log(`調試: 批量操作結果: 成功=${batchResult.successCount}, 失敗=${batchResult.failedCount}`);
-  console.log(`調試: 批量操作錯誤:`, batchErrors);
+  console.log(`Debug: Batch operation result: Success=${batchResult.successCount}, Failed=${batchResult.failedCount}`);
+  console.log(`Debug: Batch operation errors:`, batchErrors);
 });
 
 // 系統配置步驟
@@ -230,13 +230,13 @@ Given("系統配置為嚴格事務模式", function () {
 Given("系統啟用通知功能", function () {
   const { TaskService } = require("../src/services/TaskService");
   TaskService.enableNotifications();
-  console.log("通知功能已啟用");
+  console.log("Notification feature enabled");
 });
 
 Given("任務 {string} 正在被其他用戶修改", function (taskId: string) {
   const { TaskService } = require("../src/services/TaskService");
   TaskService.lockTask(taskId);
-  console.log(`任務 ${taskId} 已被鎖定`);
+  console.log(`Task ${taskId} has been locked`);
 });
 
 // 驗證步驟
@@ -280,37 +280,37 @@ Then("操作結果應該顯示：", function (dataTable: DataTable) {
     expected[key] = value;
   }
 
-  console.log(`調試: 期望結果:`, expected);
-  console.log(`調試: 實際結果:`, batchResult);
+  console.log(`Debug: Expected result:`, expected);
+  console.log(`Debug: Actual result:`, batchResult);
 
   // 創建中文到英文的映射
   const keyMapping: Record<string, string> = {
-    成功數量: "successCount",
-    失敗數量: "failedCount",
-    總數量: "totalCount",
+    successCount: "successCount",
+    failureCount: "failedCount",
+    totalCount: "totalCount",
   };
 
-  for (const [chineseKey, value] of Object.entries(expected)) {
-    const englishKey = keyMapping[chineseKey] || chineseKey;
+  for (const [key, value] of Object.entries(expected)) {
+    const englishKey = keyMapping[key] || key;
     const expectedValue = parseInt(value as string);
     const actualValue = batchResult[englishKey];
-    console.log(`調試: 比較 ${chineseKey} (${englishKey}): 期望=${expectedValue}, 實際=${actualValue}`);
+    console.log(`Debug: Compare ${key} (${englishKey}): Expected=${expectedValue}, Actual=${actualValue}`);
     expect(actualValue).to.equal(expectedValue);
   }
 });
 
 Then("錯誤詳情應該包含 {string}", function (expectedError: string) {
-  console.log(`調試: 檢查錯誤詳情`);
-  console.log(`調試: 期望錯誤:`, expectedError);
-  console.log(`調試: 實際錯誤列表:`, batchErrors);
-  console.log(`調試: 錯誤列表長度:`, batchErrors.length);
+  console.log(`Debug: Checking error details`);
+  console.log(`Debug: Expected error:`, expectedError);
+  console.log(`Debug: Actual error list:`, batchErrors);
+  console.log(`Debug: Error list length:`, batchErrors.length);
 
   const found = batchErrors.some((error) => {
-    console.log(`調試: 檢查錯誤 "${error}" 是否包含 "${expectedError}"`);
+    console.log(`Debug: Checking if error "${error}" contains "${expectedError}"`);
     return error.includes(expectedError);
   });
 
-  console.log(`調試: 找到匹配錯誤:`, found);
+  console.log(`Debug: Found matching error:`, found);
   expect(found).to.be.true;
 });
 
@@ -324,9 +324,9 @@ Then("任務 {string} 應該有：", function (taskId: string, dataTable: DataTa
   const expected = dataTable.hashes()[0];
 
   for (const [key, value] of Object.entries(expected)) {
-    if (key === "狀態") {
+    if (key === "status") {
       expect((task as any).status).to.equal(value);
-    } else if (key === "負責人") {
+    } else if (key === "assignee") {
       expect((task as any).assigneeId).to.equal(value);
     }
   }
@@ -340,22 +340,22 @@ Then("工作負荷應該重新分配", function () {
 Then("操作日誌應該記錄所有變更", function () {
   const { TaskService } = require("../src/services/TaskService");
   const operationLog = TaskService.getOperationLog();
-  console.log(`調試: 操作日誌:`, operationLog);
+  console.log(`Debug: Operation log:`, operationLog);
   expect(operationLog.length).to.be.greaterThan(0);
 });
 
 Then("用戶 {string} 應該收到任務分配通知", function (userId: string) {
   const { TaskService } = require("../src/services/TaskService");
   const notifications = TaskService.getNotifications(userId);
-  console.log(`調試: 用戶 ${userId} 的通知:`, notifications);
-  expect(notifications).to.include("任務分配通知");
+  console.log(`Debug: User ${userId} notifications:`, notifications);
+  expect(notifications).to.include("Task assignment notification");
 });
 
 Then("用戶 {string} 應該收到任務移除通知", function (userId: string) {
   const { TaskService } = require("../src/services/TaskService");
   const notifications = TaskService.getNotifications(userId);
-  console.log(`調試: 用戶 ${userId} 的通知:`, notifications);
-  expect(notifications).to.include("任務移除通知");
+  console.log(`Debug: User ${userId} notifications:`, notifications);
+  expect(notifications).to.include("Task removal notification");
 });
 
 Then("通知應該包含批量操作的詳細資訊", function () {

@@ -8,11 +8,11 @@ Given("系統中存在以下任務：", function (dataTable: DataTable) {
   const taskData = dataTable.hashes();
 
   taskData.forEach((row) => {
-    const task = new Task(row["任務ID"], row["標題"], "系統生成的描述", row["專案ID"], row["負責人"]);
+    const task = new Task(row["taskId"], row["title"], "System generated description", row["projectId"], row["assigneeId"]);
 
     // 將任務添加到 TaskService 中
-    (TaskService as any).tasks.set(row["任務ID"], task);
-    console.log(`系統添加任務: ${row["任務ID"]} - ${row["標題"]}`);
+    (TaskService as any).tasks.set(row["taskId"], task);
+    console.log(`System added task: ${row["taskId"]} - ${row["title"]}`);
   });
 });
 
@@ -24,10 +24,10 @@ When("用戶 {string} 查詢任務列表", function (userId: string) {
     queryResults.length = 0;
     queryResults.push(...results);
 
-    console.log(`用戶 ${userId} 查詢到 ${queryResults.length} 個任務`);
+    console.log(`User ${userId} queried ${queryResults.length} tasks`);
   } catch (error) {
     queryResults.length = 0;
-    console.log(`查詢失敗: ${error instanceof Error ? error.message : "未知錯誤"}`);
+    console.log(`Query failed: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
 });
 

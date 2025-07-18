@@ -11,17 +11,17 @@ When("用戶 {string} 更新任務 {string}：", function (userId: string, taskI
 
   try {
     updatedTask = taskService.updateTask(taskId, {
-      title: updateData["標題"],
-      description: updateData["描述"],
+      title: updateData["title"],
+      description: updateData["description"],
       updatedBy: userId,
     });
     setLastError(null);
-    console.log(`更新任務: ${taskId} by ${userId}`);
+    console.log(`Updating task: ${taskId} by ${userId}`);
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "未知錯誤";
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     setLastError(errorMessage);
     updatedTask = null;
-    console.log(`更新任務失敗: ${errorMessage}`);
+    console.log(`Task update failed: ${errorMessage}`);
   }
 });
 
@@ -30,17 +30,17 @@ When("用戶 {string} 嘗試更新任務 {string}：", function (userId: string,
 
   try {
     updatedTask = taskService.updateTask(taskId, {
-      title: updateData["標題"],
-      description: updateData["描述"],
+      title: updateData["title"],
+      description: updateData["description"],
       updatedBy: userId,
     });
     setLastError(null);
-    console.log(`嘗試更新任務: ${taskId} by ${userId}`);
+    console.log(`Attempting to update task: ${taskId} by ${userId}`);
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "未知錯誤";
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     setLastError(errorMessage);
     updatedTask = null;
-    console.log(`更新任務失敗: ${errorMessage}`);
+    console.log(`Task update failed: ${errorMessage}`);
   }
 });
 

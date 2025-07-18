@@ -10,42 +10,42 @@ let createdTask: Task | null = null;
 When("用戶 {string} 創建任務：", function (userId: string, dataTable: DataTable) {
   const taskData = dataTable.hashes()[0];
   const request: CreateTaskRequest = {
-    title: taskData["標題"],
-    description: taskData["描述"],
-    projectId: taskData["專案ID"],
+    title: taskData["title"],
+    description: taskData["description"],
+    projectId: taskData["projectId"],
     creatorId: userId,
   };
 
   try {
     createdTask = taskService.createTask(request);
     setLastError(null);
-    console.log(`創建任務: ${JSON.stringify(request)}`);
+    console.log(`Creating task: ${JSON.stringify(request)}`);
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "未知錯誤";
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     setLastError(errorMessage);
     createdTask = null;
-    console.log(`創建任務失敗: ${errorMessage}`);
+    console.log(`Task creation failed: ${errorMessage}`);
   }
 });
 
 When("用戶 {string} 嘗試創建任務：", function (userId: string, dataTable: DataTable) {
   const taskData = dataTable.hashes()[0];
   const request: CreateTaskRequest = {
-    title: taskData["標題"],
-    description: taskData["描述"],
-    projectId: taskData["專案ID"],
+    title: taskData["title"],
+    description: taskData["description"],
+    projectId: taskData["projectId"],
     creatorId: userId,
   };
 
   try {
     createdTask = taskService.createTask(request);
     setLastError(null);
-    console.log(`嘗試創建任務: ${JSON.stringify(request)}`);
+    console.log(`Attempting to create task: ${JSON.stringify(request)}`);
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "未知錯誤";
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     setLastError(errorMessage);
     createdTask = null;
-    console.log(`創建任務失敗: ${errorMessage}`);
+    console.log(`Task creation failed: ${errorMessage}`);
   }
 });
 

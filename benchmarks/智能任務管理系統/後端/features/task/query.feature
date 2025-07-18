@@ -10,7 +10,7 @@ Feature: 任務查詢功能
     Given 系統中存在用戶 "user1" 和 "user2"
     And 系統中存在專案 "proj1" 由用戶 "user1" 管理
     And 系統中存在以下任務：
-      | 任務ID | 標題 | 負責人 | 專案ID |
+      | taskId | title | assigneeId | projectId |
       | task1 | 任務1 | user1 | proj1 |
       | task2 | 任務2 | user1 | proj1 |
 

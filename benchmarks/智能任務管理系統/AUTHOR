@@ -1,26 +1,2 @@
-智能任務管理系統 Benchmark 著作權聲明
-
-作者：CabLate
-日期：2025-07-14
-版本：v1.0
-
-此 Benchmark 系統是為了 AI x BDD 研究而設計，包含：
-
-1. 完整的需求規格書 (requirement.md)
-2. 6個核心功能的 Feature files
-3. 符合 AI-BDD v3.1 規範的測試設計
-4. 高複雜度智能分配算法設計
-5. 8+ API 端點的完整規劃
-
-設計特點：
-- 遵循 BDD 最佳實踐
-- 每個 Scenario 測試單一業務規則
-- 包含複雜度 ≥ 8 的業務邏輯
-- 完整的錯誤處理和權限控制
-- 適合作為 AI 開發的基準測試
-
-此作品遵循開源精神，歡迎研究者使用、學習和改進。
-
----
-CabLate
-AI x BDD 研究貢獻者 
+CabLate (cablate)
+GitHub: https://github.com/cablate
