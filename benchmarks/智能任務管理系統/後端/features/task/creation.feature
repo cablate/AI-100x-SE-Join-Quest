@@ -19,5 +19,5 @@ Feature: 任務創建功能
       | title | description | projectId |
       | 實作登入功能 | 開發用戶登入API | proj1 |
     Then 任務應該創建成功
-    And 任務狀態應該是 "TODO"
+    And 最後創建的任務狀態應該是 "TODO"
     And 任務負責人應該是 "user1" 

@@ -8,6 +8,9 @@ let batchResult: any = {};
 let batchErrors: string[] = [];
 let lastErrorMessage: string | null = null;
 
+// 新增：批量操作請求的臨時存儲
+let batchOperationRequest: any = {};
+
 When("用戶批量操作任務：", function (dataTable: DataTable) {
   // 解析配置 - 將DataTable轉換為鍵值對
   const rawData = dataTable.raw();
@@ -113,7 +116,7 @@ When("用戶批量操作任務：", function (dataTable: DataTable) {
     // 同步更新測試步驟中的tasks Map
     if (result.successCount > 0) {
       taskIds.forEach((taskId) => {
-        const updatedTask = (TaskService as any).tasks.get(taskId);
+        const updatedTask = taskService.getTaskById(taskId);
         if (updatedTask) {
           tasks.set(taskId, updatedTask);
         }
@@ -275,4 +278,106 @@ Then("通知應該包含批量操作的詳細資訊", function () {
   );
   
   expect(hasNotifications).to.be.true;
+});
+
+// 新增原子化步驟定義
+
+When("用戶 {string} 批量更新任務狀態：", function (operator: string, dataTable: DataTable) {
+  const data = dataTable.hashes()[0];
+  const taskIds = data["taskIds"].split(",").map(id => id.trim());
+  const newStatus = data["newStatus"];
+  const transactionMode = data["transactionMode"] || "partial";
+  
+  const taskService = TaskService.getInstance();
+  
+  try {
+    const batchRequest = {
+      taskIds: taskIds,
+      updates: { status: newStatus },
+      operatorId: operator,
+      transactionMode: transactionMode as "strict" | "partial",
+    };
+    
+    const result = taskService.batchUpdateTasks(batchRequest);
+    
+    // 更新結果
+    batchResult = {
+      successCount: result.successCount,
+      failedCount: result.failedCount,
+      totalCount: result.totalCount,
+    };
+    batchErrors = result.errors;
+    
+    // 同步更新測試步驟中的tasks Map
+    if (result.successCount > 0) {
+      taskIds.forEach((taskId) => {
+        const updatedTask = taskService.getTaskById(taskId);
+        if (updatedTask) {
+          tasks.set(taskId, updatedTask);
+        }
+      });
+    }
+    
+    // 如果是事務性失敗，設置錯誤訊息
+    if (transactionMode === "strict" && result.failedCount > 0) {
+      setLastError(result.errors[0] || "Batch operation failed, all changes rolled back");
+    }
+  } catch (error: any) {
+    lastErrorMessage = error.message;
+    setLastError(lastErrorMessage);
+    
+    batchResult = {
+      successCount: 0,
+      failedCount: taskIds.length,
+      totalCount: taskIds.length,
+    };
+    batchErrors = [error.message];
+  }
+});
+
+When("用戶 {string} 批量分配任務負責人：", function (operator: string, dataTable: DataTable) {
+  const data = dataTable.hashes()[0];
+  const taskIds = data["taskIds"].split(",").map(id => id.trim());
+  const newAssignee = data["newAssignee"];
+  
+  const taskService = TaskService.getInstance();
+  
+  try {
+    const batchRequest = {
+      taskIds: taskIds,
+      updates: { assigneeId: newAssignee },
+      operatorId: operator,
+      transactionMode: "partial" as "strict" | "partial",
+    };
+    
+    const result = taskService.batchUpdateTasks(batchRequest);
+    
+    // 更新結果
+    batchResult = {
+      successCount: result.successCount,
+      failedCount: result.failedCount,
+      totalCount: result.totalCount,
+    };
+    batchErrors = result.errors;
+    
+    // 同步更新測試步驟中的tasks Map
+    if (result.successCount > 0) {
+      taskIds.forEach((taskId) => {
+        const updatedTask = taskService.getTaskById(taskId);
+        if (updatedTask) {
+          tasks.set(taskId, updatedTask);
+        }
+      });
+    }
+  } catch (error: any) {
+    lastErrorMessage = error.message;
+    setLastError(lastErrorMessage);
+    
+    batchResult = {
+      successCount: 0,
+      failedCount: taskIds.length,
+      totalCount: taskIds.length,
+    };
+    batchErrors = [error.message];
+  }
 });
